@@ -1,5 +1,5 @@
 <template>
-    <div id="hand-zone">
+    <div id="hand-zone" class="zone">
         <h2>Hand</h2>
         <ul v-if="gameState?.you?.zone?.hand?.length > 0">
             <li v-for="(card, i) in gameState.you.zone.hand" :key="i">
