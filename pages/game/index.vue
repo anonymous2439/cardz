@@ -30,11 +30,6 @@
         <Graveyard />
         <Exile />
         <GameField v-if="Object.keys(gameState.you).length > 0" />
-        <ModalsGlobal>
-            <template #header>Modal header</template>
-            test
-            <template #footer>Modal footer</template>
-        </ModalsGlobal>
     </div>
 </template>
 

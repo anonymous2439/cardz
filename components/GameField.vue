@@ -198,8 +198,8 @@
                             const existingCardSprites = cardSprites.get(opponent.id+'-'+card.id);
                             if(existingCardSprites) {
                                 existingCardSprites.anchor.set(0.5);
-                                existingCardSprites.x = card.posX
-                                existingCardSprites.y = card.posY
+                                existingCardSprites.x = canvasWidth - card.posX
+                                existingCardSprites.y = canvasHeight - card.posY
 
                                 if(card.isTapped)
                                     existingCardSprites.rotation = -Math.PI / 2;

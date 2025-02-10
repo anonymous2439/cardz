@@ -78,6 +78,42 @@ export const useGameStore = defineStore('game', {
       });
       this.broadcastChanges()
     },
+    shiftLibraryCard(card: GameCard, direction: string) {
+      const library = this.$state.you.zone.library
+      const index = library.findIndex(item => item.id === card.id)
+      let newIndex = direction === 'right' ? index - 1 : index + 1;
+
+      if (newIndex < 0 || newIndex >= library.length) return;
+
+      [library[index], library[newIndex]] = [library[newIndex], library[index]];
+      this.$state.you.zone.library = library;
+
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => {
+        if(player.id === this.$state.you.id)
+          return this.$state.you
+        return player
+      })
+      this.broadcastChanges()
+    },
+    moveToBottomLibrary(card: GameCard) {
+      const library = this.$state.you.zone.library
+      const index = library.findIndex(item => item.id === card.id)
+
+      if (index <= 0 || index >= library.length) return;
+      const [element] = library.splice(index, 1);
+      element.isFaceUp = false
+      library.unshift(element);
+      this.$state.you.zone.library = library;
+
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => {
+        if(player.id === this.$state.you.id)
+          return this.$state.you
+        return player
+      })
+      this.broadcastChanges()
+    },
     drawCard() {
       if(this.you.zone.library.length > 0) {
         const card: GameCard = this.$state.you.zone.library.pop() as GameCard
@@ -175,6 +211,19 @@ export const useGameStore = defineStore('game', {
           return battleFieldCard
         }
         return battleFieldCard
+      })
+
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => {
+        if(player.id === this.$state.you.id)
+          return this.$state.you
+        return player
+      })
+      this.broadcastChanges()
+    },
+    setFaceupLibrary(reveal = true) {
+      this.$state.you.zone.library.map(card => {
+        card.isFaceUp    = reveal
       })
 
       // Sync your info to the players list
