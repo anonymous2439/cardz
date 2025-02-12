@@ -6,4 +6,5 @@ export interface Player {
     name: string
     cards: Card[]
     zone: Zone
+    health: number
 }

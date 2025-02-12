@@ -10,16 +10,40 @@
                 <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
                 <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
                 <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
+                <li><button @click="showAttributes">Attributes</button></li>
             </ul>
         </div>
         <div ref="pixiContainer" style="border: 1px solid black;"></div>
+
+        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes'">
+            <template #header>
+                Select Card Face
+            </template>
+            
+            <template v-if="selectedCard">
+                <p>Power: {{ selectedCard.power + selectedCard.powerCounter }} 
+                    <button @click="updateStats('power', selectedCard.powerCounter - 1)">-</button>
+                    <button @click="updateStats('power', selectedCard.powerCounter + 1)">+</button>
+                    <button @click="updateStats('power', 0)">reset</button>
+                </p>
+                <p>Toughness: {{ selectedCard.toughness + selectedCard.toughnessCounter }} 
+                    <button @click="updateStats('toughness', selectedCard.toughnessCounter - 1)">-</button>
+                    <button @click="updateStats('toughness', selectedCard.toughnessCounter + 1)">+</button>
+                    <button @click="updateStats('toughness', 0)">reset</button>
+                </p>
+            </template>
+
+            <template #footer>
+                <button @click="modalState.isActive = false">Close</button>
+            </template>
+        </ModalsGlobal>
     </div>
 </template>
   
 <script setup lang="ts">
     import { useGameStore } from '~/stores/game';
     import { onMounted, ref, computed, watch } from 'vue';
-    import { Application, Assets, Sprite, InteractionEvent } from 'pixi.js';
+    import { Application, Assets, Sprite, InteractionEvent, Text, Graphics, Container } from 'pixi.js';
     import type { GameCard } from '~/types/Card';
     import type { Player } from '~/types/Player';
     
@@ -27,10 +51,47 @@
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
+    const modalState = ref<{isActive: boolean, type: string | null}>({isActive: false, type: null})
     
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
     const cardSprites = new Map<string, Sprite>();  // A map to track the card sprites by ID
+    const cardLabels = new Map<string, Text>(); // Track labels for updating
+
+    const showAttributes = () => {
+        modalState.value.isActive   = true
+        modalState.value.type       = 'showAttributes'
+    }
+
+    const updateStats = (type: string, value: number) => {
+        console.log("reset:",value)
+        if(selectedCard.value) {
+            getYourInfo.value.zone.battlefield = getYourInfo.value.zone.battlefield.map(card => {
+                if(card.id === selectedCard?.value?.id)  {
+                    switch(type) {
+                        case 'power':
+                            card.powerCounter = value;
+                            break;
+                        case 'toughness':
+                            card.toughnessCounter = value;
+                            break;
+                    }
+                }
+                return card;
+            })
+            gameState.updatePlayer(getYourInfo.value);
+        }
+    }
+
+    const updateCardLabel = (card: GameCard) => {
+        const key = getYourInfo.value.id + '-' + card.id;
+        if (cardLabels.has(key)) {
+            const label = cardLabels.get(key);
+            if (label) {
+                label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
+            }
+        }
+    };
     
     onMounted(async () => {
         let canvasWidth     = 800
@@ -59,10 +120,11 @@
 
                     const faceUpTexture     = await Assets.load(card.imageUris.small);
                     const faceDownTexture   = await Assets.load('/back-small.JPEG');
+                    const key               = getYourInfo.value.id + '-' + card.id;
 
                     // Check if the card already exists
-                    if (cardSprites.has(getYourInfo.value.id+'-'+card.id)) {
-                        const existingCardSprites = cardSprites.get(getYourInfo.value.id+'-'+card.id);
+                    if (cardSprites.has(key)) {
+                        const existingCardSprites = cardSprites.get(key);
 
                         if(selectedCard.value && selectedCard.value?.id === card.id && existingCardSprites) {
                             if(card.isTapped)
@@ -72,6 +134,9 @@
                             
                             existingCardSprites.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
                         }
+
+                        console.log("updating card label")
+                        updateCardLabel(card)
                             
                         battleFieldCardsUpdate.push(card)
                         return;
@@ -80,11 +145,24 @@
                     // If card does not exist, load and add it
                     const cardTexture = new Sprite(card.isFaceUp ? faceUpTexture : faceDownTexture);
                     app.stage.addChild(cardTexture);
-                    cardSprites.set(getYourInfo.value.id+'-'+card.id, cardTexture); // Track the sprite by card id
+                    cardSprites.set(key, cardTexture); // Track the sprite by card id
             
                     cardTexture.anchor.set(0.5);
                     cardTexture.x = card.posX = app.screen.width / 2;
                     cardTexture.y = card.posY = app.screen.height / 2;
+
+                    // Create a text label below the card
+                    const cardLabel = new Text(`${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`, {
+                        fontSize: 16,
+                        fill: 0xffffff, // White text
+                        align: "center",
+                        fontWeight: "bold",
+                    });
+                    const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
+                    cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
+                    cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
+                    app.stage.addChild(cardLabelContainer);
+                    cardLabels.set(key, cardLabel);
 
                     battleFieldCardsUpdate.push(card)
             
@@ -107,6 +185,7 @@
             
                         // Bring the dragged card to the top
                         app.stage.setChildIndex(cardTexture, app.stage.children.length - 1);
+                        app.stage.setChildIndex(cardLabelContainer, app.stage.children.length - 1);
                     });
             
                     // Handle mouse move (dragging)
@@ -126,6 +205,10 @@
 
                             cardTexture.x = Math.max(minX, Math.min(newX, maxX));
                             cardTexture.y = Math.max(minY, Math.min(newY, maxY));
+
+                            cardLabel.anchor.set(0.5);
+                            cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
+                            cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
 
                             // Update game state
                             getYourInfo.value.zone.battlefield = getYourInfo.value.zone.battlefield.map(item => {
@@ -266,6 +349,25 @@
                 }
             });
         };
+
+        const getCardLabel = (card: GameCard, cardTexture: any, cardLabel: Text): Container => {
+            cardLabel.anchor.set(0.5);
+            // cardLabel.x = cardTexture.x + cardTexture.width / 2 - 20;
+            // cardLabel.y = cardTexture.y + cardTexture.height / 2 - 15;
+
+            // Create a background rectangle
+            const background = new Graphics();
+            background.beginFill(0x000000); // Red background
+            background.drawRect(cardLabel.x - cardLabel.width/2 - 5, cardLabel.y - cardLabel.height/2 - 5, cardLabel.width + 10, cardLabel.height + 10); // Add some padding
+            background.endFill();
+
+            // Create a container to group the background and text
+            const container = new Container();
+            container.addChild(background);
+            container.addChild(cardLabel);
+
+            return container
+        }
     
 
         watch(getYourInfo, (newValue) => {

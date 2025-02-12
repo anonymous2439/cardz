@@ -5,6 +5,8 @@ export interface Card {
     name: string,
     imageUris: string,
     quantity: number,
+    power: number;
+    toughness: number;
 }
 
 export interface GameCard extends Card {
@@ -13,4 +15,6 @@ export interface GameCard extends Card {
     isTapped: boolean;
     posX: number;
     posY: number;
+    powerCounter: number;
+    toughnessCounter: number;
 }

@@ -29,6 +29,7 @@ export const useGameStore = defineStore('game', {
         name: 'Player '+(this.playerLastId+1),
         cards: [],
         zone: {battlefield: [], graveyard: [], exile: [], library: [], hand: []},
+        health: 20
       }
 
       this.you = you
@@ -66,6 +67,8 @@ export const useGameStore = defineStore('game', {
           isTapped: false,
           posX: 0,
           posY: 0,
+          powerCounter: 0,
+          toughnessCounter: 0,
         }));
     
         // Update the library

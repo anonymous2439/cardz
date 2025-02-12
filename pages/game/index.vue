@@ -6,6 +6,10 @@
             <div v-for="(player, index) in gameState.players" :key="index">
                 <h4>Player: {{ player.name }}</h4>
                 <ul>
+                    <li>health: {{ player.health }} 
+                        <button @click="gameState.getYourInfo.health--">-</button>
+                        <button @click="gameState.getYourInfo.health++">+</button>
+                    </li>
                     <li>Total Cards: {{ player.cards.length }}</li>
                     <li>Library: {{ player.zone.library.length }}</li>
                     <li>Battlefield: {{ player.zone.battlefield.length }}</li>
@@ -75,11 +79,17 @@
         const data: any = await response.json();
         const cards: Card[] = []
         if(data && data.data) {
-            console.log("data:",data.data)
             cardIdentifiers.forEach((cardIdentifier: any) => {
-                data.data.forEach((d: { name: any; id: any; image_uris: any; }) => {
+                data.data.forEach((d: { name: any; id: any; image_uris: any; power: string, toughness: string }) => {
                     if(d.name === cardIdentifier.name) {
-                        cards.push({id: d.id, name: d.name, imageUris: d.image_uris, quantity: cardIdentifier.quantity})
+                        cards.push({
+                            id:         d.id, 
+                            name:       d.name, 
+                            imageUris:  d.image_uris, 
+                            quantity:   cardIdentifier.quantity,
+                            power:      !isNaN(parseInt(d.power)) ? parseInt(d.power) : 0,
+                            toughness:  !isNaN(parseInt(d.toughness)) ? parseInt(d.toughness) : 0,
+                        })
                     }
                 })
             })

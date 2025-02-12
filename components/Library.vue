@@ -71,7 +71,7 @@
     import type { GameCard } from '~/types/Card';
 
     const gameState = useGameStore()
-    const modalState = useState<{isActive: boolean, type: string | null}>('modalState', () => ({isActive: false, type: null}))
+    const modalState = ref<{isActive: boolean, type: string | null}>({isActive: false, type: null})
     const selectedCard = ref<GameCard | null>(null)
 
     const reveal = () => {
