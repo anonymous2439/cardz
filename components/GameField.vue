@@ -56,7 +56,7 @@
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
     const cardSprites = new Map<string, Sprite>();  // A map to track the card sprites by ID
-    const cardLabels = new Map<string, Text>(); // Track labels for updating
+    const cardLabels = new Map<string, Container>(); // Track labels for updating
 
     const showAttributes = () => {
         modalState.value.isActive   = true
@@ -83,12 +83,15 @@
         }
     }
 
-    const updateCardLabel = (card: GameCard) => {
-        const key = getYourInfo.value.id + '-' + card.id;
+    const updateCardLabel = (player: Player, card: GameCard) => {
+        const key = player.id + '-' + card.id;
         if (cardLabels.has(key)) {
-            const label = cardLabels.get(key);
-            if (label) {
-                label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
+            const cardLabelContainer = cardLabels.get(key);
+            if(cardLabelContainer) {
+                const label = cardLabelContainer.children.find(child => child instanceof Text) as Text | undefined;
+                if (label) {
+                    label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
+                }
             }
         }
     };
@@ -114,6 +117,14 @@
                         cardSprites.delete(key);  // Remove from map
                     }
                 }
+                // Remove labels from the battlefield
+                for (const [key, text] of cardLabels.entries()) {
+                    if (key.startsWith(getYourInfo.value.id + '-') && 
+                        !getYourInfo.value.zone.battlefield.some(card => getYourInfo.value.id+'-'+card.id === key)) {
+                        text.destroy();  // Remove from PIXI
+                        cardLabels.delete(key);  // Remove from map
+                    }
+                }
 
                 // Loop through the battlefield cards
                 const loadPromises = getYourInfo.value.zone.battlefield.map(async (card) => {
@@ -135,8 +146,7 @@
                             existingCardSprites.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
                         }
 
-                        console.log("updating card label")
-                        updateCardLabel(card)
+                        updateCardLabel(getYourInfo.value, card)
                             
                         battleFieldCardsUpdate.push(card)
                         return;
@@ -162,7 +172,7 @@
                     cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
                     cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
                     app.stage.addChild(cardLabelContainer);
-                    cardLabels.set(key, cardLabel);
+                    cardLabels.set(key, cardLabelContainer);
 
                     battleFieldCardsUpdate.push(card)
             
@@ -268,6 +278,14 @@
                         cardSprites.delete(key);  // Remove from map
                     }
                 }
+                // Remove labels from the battlefield
+                for (const [key, text] of cardLabels.entries()) {
+                    if (key.startsWith(opponent.id + '-') && 
+                        !opponent.zone.battlefield.some(card => opponent.id+'-'+card.id === key)) {
+                        text.destroy();  // Remove from PIXI
+                        cardLabels.delete(key);  // Remove from map
+                    }
+                }
 
                 try {
                     // Loop through the battlefield cards
@@ -275,6 +293,7 @@
 
                         const faceUpTexture     = await Assets.load(card.imageUris.small);
                         const faceDownTexture   = await Assets.load('/back-small.JPEG');
+                        const key               = opponent.id + '-' + card.id;
 
                         // Check if the card already exists
                         if (cardSprites.has(opponent.id+'-'+card.id)) {
@@ -291,8 +310,24 @@
 
                                 existingCardSprites.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
 
+                                if (cardLabels.has(key)) {
+                                    const cardLabelContainer = cardLabels.get(key);
+                                    if(cardLabelContainer) {
+                                        // cardLabelContainer.x = card.posX + cardTexture.width / 2 - 20;
+                                        // cardLabelContainer.y = card.posY + cardTexture.height / 2 - 15;
+
+                                        cardLabelContainer.x = existingCardSprites.x - 20;
+                                        cardLabelContainer.y = existingCardSprites.y - 15;
+                                    }
+                                }
+
+                                
+
+                                updateCardLabel(opponent, card)
                             }
                             
+                            
+
                             return;
                         }
 
@@ -304,6 +339,7 @@
                         cardTexture.anchor.set(0.5);
                         cardTexture.x = card.posX = app.screen.width / 2;
                         cardTexture.y = card.posY = app.screen.height / 2;
+                        
 
                         // Enable interaction
                         cardTexture.interactive = true;
@@ -311,6 +347,19 @@
 
                         let offsetX = 0;
                         let offsetY = 0;
+
+                        // Create a text label below the card
+                        const cardLabel = new Text(`${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`, {
+                            fontSize: 16,
+                            fill: 0xffffff, // White text
+                            align: "center",
+                            fontWeight: "bold",
+                        });
+                        const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
+                        cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
+                        cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
+                        app.stage.addChild(cardLabelContainer);
+                        cardLabels.set(key, cardLabelContainer);
 
                         // Handle mouse down (begin dragging)
                         cardTexture.on('pointerdown', (event: InteractionEvent) => {

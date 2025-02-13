@@ -189,6 +189,14 @@ export const useGameStore = defineStore('game', {
       );
       this.broadcastChanges()
     },
+    updateHealth(health: number) {
+      this.$state.you.health = health;
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => 
+        player.id === this.$state.you.id ? this.$state.you : player
+      );
+      this.broadcastChanges()
+    },
     tapCard(card: GameCard) {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
         if(battleFieldCard.id === card.id) {

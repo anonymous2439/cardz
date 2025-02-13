@@ -7,8 +7,8 @@
                 <h4>Player: {{ player.name }}</h4>
                 <ul>
                     <li>health: {{ player.health }} 
-                        <button @click="gameState.getYourInfo.health--">-</button>
-                        <button @click="gameState.getYourInfo.health++">+</button>
+                        <button @click="gameState.updateHealth(gameState.getYourInfo.health-1)">-</button>
+                        <button @click="gameState.updateHealth(gameState.getYourInfo.health+1)">+</button>
                     </li>
                     <li>Total Cards: {{ player.cards.length }}</li>
                     <li>Library: {{ player.zone.library.length }}</li>
