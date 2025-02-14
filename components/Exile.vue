@@ -1,6 +1,5 @@
 <template>
     <div id="exile-zone" class="zone">
-        <h2>Exile</h2>
         <ul v-if="gameState?.you?.zone?.exile?.length > 0">
             <li v-for="(card, i) in gameState.you.zone.exile" :key="i">
                 <img :src="card.imageUris.small" />

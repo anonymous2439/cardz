@@ -1,6 +1,5 @@
 <template>
     <div id="graveyard-zone" class="zone">
-        <h2>Graveyard</h2>
         <ul v-if="gameState?.you?.zone?.graveyard?.length > 0">
             <li v-for="(card, i) in gameState.you.zone.graveyard" :key="i">
                 <img :src="card.imageUris.small" />

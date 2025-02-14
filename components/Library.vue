@@ -1,29 +1,32 @@
 <template>
     <div id="library-zone" class="zone">
-        <h2>Library</h2>
-        <button @click="gameState.drawCard">Draw a card</button>
-        <button @click="reveal()">Reveal</button>
-        <button @click="shuffle()">Shuffle</button>
-        <ul v-if="gameState?.you?.zone?.library?.length > 0">
-            <li v-for="(card, i) in gameState.you.zone.library.slice().reverse()" :key="i">
-                <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.JPEG'" />
-                <template v-if="card.isFaceUp && !modalState.isActive">
-                    <button @click="pick(card)">Pick</button>
-                    <button 
-                        @click="gameState.shiftLibraryCard(card, 'right')" 
-                        v-if="i < gameState.you.zone.library.slice().reverse().length-1 && gameState.you.zone.library.slice().reverse()[i+1].isFaceUp"
-                    >
-                        Shift to Right
-                    </button>
-                    <button  
-                        @click="gameState.shiftLibraryCard(card, 'left')"
-                        v-if="i > 0 && gameState.you.zone.library.slice().reverse()[i-1].isFaceUp"
-                    >
-                        Shift to Left
-                    </button>
-                </template>
-            </li>
-        </ul>
+        <div class="zone-con" v-if="gameState?.you?.zone?.library?.length > 0">
+            <div class="zone-options">
+                <button @click="gameState.drawCard">Draw a card</button>
+                <button @click="reveal()">Reveal</button>
+                <button @click="shuffle()">Shuffle</button>
+            </div>
+            <ul>
+                <li v-for="(card, i) in gameState.you.zone.library.slice().reverse()" :key="i">
+                    <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.JPEG'" />
+                    <template v-if="card.isFaceUp && !modalState.isActive">
+                        <button @click="pick(card)">Pick</button>
+                        <button 
+                            @click="gameState.shiftLibraryCard(card, 'right')" 
+                            v-if="i < gameState.you.zone.library.slice().reverse().length-1 && gameState.you.zone.library.slice().reverse()[i+1].isFaceUp"
+                        >
+                            >>
+                        </button>
+                        <button  
+                            @click="gameState.shiftLibraryCard(card, 'left')"
+                            v-if="i > 0 && gameState.you.zone.library.slice().reverse()[i-1].isFaceUp"
+                        >
+                            <<
+                        </button>
+                    </template>
+                </li>
+            </ul>
+        </div>
     </div>
     <template v-if="modalState.isActive">
         <ModalsGlobal v-if="modalState.type == 'reveal'">

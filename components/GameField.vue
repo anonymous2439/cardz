@@ -1,19 +1,24 @@
 <template>
     <div>
-        <h1>Render Image on Canvas</h1>
-        <div v-if="selectedCard">
-            <h4>Selected Card: {{ selectedCard.name }}</h4>
-            <img :src="selectedCard.imageUris.normal" />
-            <ul>
-                <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
-                <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
-                <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
-                <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
-                <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
-                <li><button @click="showAttributes">Attributes</button></li>
-            </ul>
+
+        <div id="gamefield">
+            <section>
+                <div class="card-info" v-if="selectedCard">
+                    <ul>
+                        <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
+                        <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
+                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
+                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
+                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
+                        <li><button @click="showAttributes">Attributes</button></li>
+                    </ul>
+                    <img :src="selectedCard.imageUris.normal" />
+                </div>
+            </section>
+            <section>
+                <div ref="pixiContainer" style="box-shadow: -2px 9px 28px -2px #1a1a1a;display: flex;"></div>
+            </section>
         </div>
-        <div ref="pixiContainer" style="border: 1px solid black;"></div>
 
         <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes'">
             <template #header>
@@ -100,7 +105,7 @@
         let canvasWidth     = 800
         let canvasHeight    = 600
         const app = new Application();
-        await app.init({ background: '#1099bb', width: canvasWidth, height: canvasHeight });
+        await app.init({ background: '#2C3E50', width: canvasWidth, height: canvasHeight });
     
         pixiContainer.value.appendChild(app.canvas);
     
@@ -429,3 +434,37 @@
     });
 </script>
   
+<style lang="scss" scoped>
+    #gamefield {
+        display: flex;
+        justify-content: center;
+        background: #5A5A5A;
+        padding: 52px 24px;
+        section {
+            &:nth-child(1) {
+                order: 1;
+                height: 100%;
+                min-width: 633px;
+            }
+            .card-info {
+                display: flex;
+                ul {
+                    margin: 0;
+                    padding: 0;
+                    list-style: none;
+                    display: flex;
+                    flex-direction: column;
+                    li {
+                        display: block;
+                        position: relative;
+                        margin: 0 2px 5px;
+                        button {
+                            width: 141px;
+                            padding: 7px 4px;   
+                        }
+                    }
+                }
+            }
+        }
+    }
+</style>
