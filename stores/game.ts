@@ -284,7 +284,7 @@ export const useGameStore = defineStore('game', {
      * Websocket initialization
      */
     startWebSocketServer() {
-      this.$state.ws = new WebSocket('ws://128.199.126.14:8080');
+      this.$state.ws = new WebSocket('ws://localhost:8080');
 
       this.$state.ws.onmessage = (event) => {
           const eventData = JSON.parse(event.data);
