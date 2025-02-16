@@ -1,3 +1,4 @@
+import type { RuntimeConfig } from 'nuxt/schema'
 import { defineStore } from 'pinia'
 import type { GameCard } from '~/types/Card'
 import type { Player } from '~/types/Player'
@@ -284,7 +285,8 @@ export const useGameStore = defineStore('game', {
      * Websocket initialization
      */
     startWebSocketServer() {
-      this.$state.ws = new WebSocket('ws://localhost:8080');
+      const config: any = useRuntimeConfig();
+      this.$state.ws = new WebSocket(config.public.wsEndpoint);
 
       this.$state.ws.onmessage = (event) => {
           const eventData = JSON.parse(event.data);
