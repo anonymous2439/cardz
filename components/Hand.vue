@@ -2,10 +2,12 @@
     <div id="hand-zone" class="zone">
         <ul v-if="gameState?.you?.zone?.hand?.length > 0">
             <li v-for="(card, i) in gameState.you.zone.hand" :key="i">
-                <img :src="card.imageUris.small" />
+                <img class="magnified-zone" v-if="hoveredCard && hoveredCard.id === card.id" :src="card.imageUris.normal"/>
+                <img :src="card.imageUris.small" @mouseover="isHovered(true, card)" @mouseleave="isHovered(false, card)" />
                 <button @click="toBattlefield(card)">To Battlefield</button>
                 <button @click="gameState.changeZone(card, 'hand', 'graveyard')">To Graveyard</button>
                 <button @click="gameState.changeZone(card, 'hand', 'exile')">To Exile</button>
+                <button @click="gameState.changeZone(card, 'hand', 'library')">To Library</button>
                 <button @click="giveToOpponent(card)">Give to Opponent</button>
             </li>
         </ul>
@@ -29,7 +31,8 @@
 
     const gameState = useGameStore()
     const modalState = useState<{isActive: boolean, type: string | null}>('modalState', () => ({isActive: false, type: null}))
-    const selectedCard = ref<GameCard | null>(null)
+    const selectedCard: Ref<GameCard | null> = ref(null)
+    const hoveredCard: Ref<GameCard | null> = ref(null)
 
     const toBattlefield = (card:GameCard) => {
         selectedCard.value          = card
@@ -46,6 +49,14 @@
         }
     }
 
+    const isHovered = (hovered: boolean, card: GameCard) => {
+        console.log("hovered:",card)
+        if(hovered)
+            hoveredCard.value = card
+        else
+            hoveredCard.value = null
+    }
+
     const giveToOpponent = (card:GameCard) => {
         
     }
@@ -58,14 +69,28 @@
             display: flex;
             column-gap: 5px;
             overflow: auto;
+            position: relative;
             li {
                 list-style: none;
                 display: flex;
                 flex-direction: column;
+                position: relative;
                 img {
-                    pointer-events: none;
+                    
                 }
             }
         }
+    }
+
+    .magnified-zone {
+        position:fixed; 
+        left: 50%; 
+        top: 5px;
+        z-index: 10; 
+        pointer-events: none;
+        transform: translateX(-50%);
+        scale: 0.7;
+        transform-origin: top left;
+        box-shadow: 0 0 45px 22px #C5A100;
     }
 </style>

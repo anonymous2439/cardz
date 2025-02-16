@@ -233,8 +233,10 @@ export const useGameStore = defineStore('game', {
     revealCard(card: GameCard) {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
         if(battleFieldCard.id === card.id) {
-          battleFieldCard.isFaceUp    = true
-          battleFieldCard.isRevealed  = true
+          battleFieldCard.isFaceUp          = true
+          battleFieldCard.isRevealed        = true
+          battleFieldCard.powerCounter      = 0
+          battleFieldCard.toughnessCounter  = 0
           return battleFieldCard
         }
         return battleFieldCard

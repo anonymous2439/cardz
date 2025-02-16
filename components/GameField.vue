@@ -15,8 +15,8 @@
                     <img :src="selectedCard.imageUris.normal" />
                 </div>
             </section>
-            <section>
-                <div ref="pixiContainer" style="box-shadow: -2px 9px 28px -2px #1a1a1a;display: flex;"></div>
+            <section class="pixi-section">
+                <div id="pixiContainer" ref="pixiContainer"></div>
             </section>
         </div>
 
@@ -104,14 +104,15 @@
 
             const label = cardLabelContainer.children.find(child => child instanceof Text) as Text | undefined;
             if (label) {
-                label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
+                const labelText = !card.isFaceUp ? `${card.powerCounter}/${card.toughnessCounter}` : `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`
+                label.text = labelText;
             }
         }
     };
     
     onMounted(async () => {
-        let canvasWidth     = 800
-        let canvasHeight    = 600
+        let canvasWidth     = 1200
+        let canvasHeight    = 950
         const app = new Application();
         await app.init({ background: '#2C3E50', width: canvasWidth, height: canvasHeight });
     
@@ -241,7 +242,6 @@
                                 if (item.id === card.id) {
                                     item.posX = cardTexture.x;
                                     item.posY = cardTexture.y;
-                                    selectedCard.value = card as GameCard | null
                                     return item;
                                 }
                                 return item;
@@ -260,6 +260,7 @@
                                 const position = event.data.getLocalPosition(cardTexture.parent);
                                 item.posX = position.x - offsetX
                                 item.posY = position.y - offsetY
+                                selectedCard.value = card as GameCard | null
                                 return item
                             }
                             return item
@@ -329,15 +330,10 @@
                                 if (cardLabels.has(key)) {
                                     const cardLabelContainer = cardLabels.get(key);
                                     if(cardLabelContainer) {
-                                        // cardLabelContainer.x = existingCardSprites.x + (existingCardSprites.width / 2) - (cardLabelContainer.width / 2);
-                                        // cardLabelContainer.y = existingCardSprites.y + (existingCardSprites.height / 2) - (cardLabelContainer.height / 2);
-
                                         updateCardLabel(card, cardLabelContainer, existingCardSprites)
                                     }
                                 }
                             }
-                            
-                            
 
                             return;
                         }
@@ -360,7 +356,8 @@
                         let offsetY = 0;
 
                         // Create a text label below the card
-                        const cardLabel = new Text(`${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`, {
+                        const labelText = !card.isFaceUp ? `${card.powerCounter}/${card.toughnessCounter}` : `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`
+                        const cardLabel = new Text(labelText, {
                             fontSize: 16,
                             fill: 0xffffff, // White text
                             align: "center",
@@ -452,6 +449,11 @@
                 height: 100%;
                 min-width: 633px;
             }
+            &.pixi-section {
+                box-shadow: -2px 9px 28px -2px #1a1a1a;
+                width: calc(1200px * 0.65);
+                height: calc(950px * 0.65);
+            }
             .card-info {
                 display: flex;
                 ul {
@@ -472,5 +474,11 @@
                 }
             }
         }
+    }
+
+    #pixiContainer {
+        display: flex;
+        transform: scale(0.65);
+        transform-origin: top left;
     }
 </style>
