@@ -1,69 +1,129 @@
 <template>
     <div id="game-page">
-        <h1>Game</h1>
-        <h4>Connected: {{ getConnectedCount }}</h4>
-        <template v-if="Object.keys(gameState.you).length > 0">
-            <div v-for="(player, index) in gameState.players" :key="index">
-                <h4>Player: {{ player.name }}</h4>
-                <ul>
-                    <li>health: {{ player.health }} 
-                        <button @click="gameState.updateHealth(gameState.getYourInfo.health-1)">-</button>
-                        <button @click="gameState.updateHealth(gameState.getYourInfo.health+1)">+</button>
-                    </li>
-                    <li>Total Cards: {{ player.cards.length }}</li>
-                    <li>Library: {{ player.zone.library.length }}</li>
-                    <li>Battlefield: {{ player.zone.battlefield.length }}</li>
-                    <li>Graveyard: {{ player.zone.graveyard.length }}</li>
-                    <li>Exile: {{ player.zone.exile.length }}</li>
-                    <li>Hand: {{ player.zone.hand.length }}</li>
-                </ul>
+        <template v-if="Object.keys(gameState.you).length > 0 && (getConnectedCount === gameState.getPlayers.length)">
+            <div id="players-stats">
+                <div class="player-stats-con" v-for="(player, index) in gameState.players" :key="index">
+                    <button 
+                        @click="selectedPlayerTab && selectedPlayerTab.id === player.id 
+                            ? selectedPlayerTab = null 
+                            : selectedPlayerTab = player">
+                                {{ player.name }} | h: {{ player.health }}
+                    </button>
+                    <ul v-if="selectedPlayerTab && selectedPlayerTab.id === player.id">
+                        <li>health: {{ player.health }} 
+                            <button @click="gameState.updateHealth(gameState.getYourInfo.health-1)">-</button>
+                            <button @click="gameState.updateHealth(gameState.getYourInfo.health+1)">+</button>
+                        </li>
+                        <li>Total Cards: {{ player.cards.length }}</li>
+                        <li>Library: {{ player.zone.library.length }}</li>
+                        <li>Battlefield: {{ player.zone.battlefield.length }}</li>
+                        <li @click="showPlayerZone('playerGraveyard', player.zone.graveyard)">Graveyard: {{ player.zone.graveyard.length }}</li>
+                        <li @click="showPlayerZone('playerExile', player.zone.exile)">Exile: {{ player.zone.exile.length }}</li>
+                        <li>Hand: {{ player.zone.hand.length }}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <GameField v-if="Object.keys(gameState.you).length > 0" />
+
+            <div v-if="Object.keys(gameState.you).length > 0" id="zones">
+                <div class="zone-tab">
+                    <ul>
+                        <li @click="selectedTab = 'library'" class="tab-library">Library</li>
+                        <li @click="selectedTab = 'hand'" class="tab-hand">Hand</li>
+                        <li @click="selectedTab = 'graveyard'" class="tab-graveyard">Graveyard</li>
+                        <li @click="selectedTab = 'exile'" class="tab-exile">Exile</li>
+                        <li @click="selectedTab = 'minimized'">Minimized</li>
+                    </ul>
+                </div>
+                <div class="zone-content">
+                    <section v-show="selectedTab === 'library'" class="tab-library"><Library /></section>
+                    <section v-show="selectedTab === 'hand'" class="tab-hand"><Hand/></section>
+                    <section v-show="selectedTab === 'graveyard'" class="tab-graveyard"><Graveyard /></section>
+                    <section v-show="selectedTab === 'exile'" class="tab-exile"><Exile /></section>
+                </div>
             </div>
         </template>
-        <div>
-            <h4>Players</h4>
-            <ul>
-                <li v-for="(player) in gameState.players" :key="player.id">{{ player.name }}</li>
+
+        <ModalsGlobal v-if="modalState.isActive && modalState.type && ['playerGraveyard', 'playerExile'].includes(modalState.type)">
+            <template #header>
+                <template v-if="modalState.type == 'playerGraveyard'">Graveyard</template>
+                <template v-else-if="modalState.type == 'playerExile'">Exile</template>
+            </template>
+            
+            <ul class="zone-card-list">
+                <li v-for="(card, index) in modalState.data" :key="index">
+                    <img :src="card.imageUris.small" />
+                </li>
             </ul>
-        </div>
-        <p><button v-if="Object.keys(gameState.you).length === 0" @click="join">Join</button></p>
-        <input type="file" id="fileInput" accept=".txt">
-        <p><button @click="gameState.cardsToLibrary">Cards to Library</button></p>
 
-        
-        <GameField v-if="Object.keys(gameState.you).length > 0" />
+            <template #footer>
+                <button 
+                    class="btn bg-primary muted"
+                    @click="modalState.isActive = false">
+                        Close
+                </button>
+            </template>
+        </ModalsGlobal>
 
-        <div v-if="Object.keys(gameState.you).length > 0" id="zones">
-            <div class="zone-tab">
-                <ul>
-                    <li @click="selectedTab = 'library'" class="tab-library">Library</li>
-                    <li @click="selectedTab = 'hand'" class="tab-hand">Hand</li>
-                    <li @click="selectedTab = 'graveyard'" class="tab-graveyard">Graveyard</li>
-                    <li @click="selectedTab = 'exile'" class="tab-exile">Exile</li>
-                    <li @click="selectedTab = 'minimized'">Minimized</li>
-                </ul>
-            </div>
-            <div class="zone-content">
-                <section v-show="selectedTab === 'library'" class="tab-library"><Library /></section>
-                <section v-show="selectedTab === 'hand'" class="tab-hand"><Hand/></section>
-                <section v-show="selectedTab === 'graveyard'" class="tab-graveyard"><Graveyard /></section>
-                <section v-show="selectedTab === 'exile'" class="tab-exile"><Exile /></section>
-            </div>
-        </div>
+        <ModalsGlobal v-else-if="Object.keys(gameState.you).length === 0 || (getConnectedCount != gameState.getPlayers.length)" class="join-modal">
+            <template #header>
+                Join Game
+            </template>
+            <h4>Connected: {{ getConnectedCount }}</h4>
+            Upload Deck: <input type="file" id="fileInput" accept=".txt">
+            <p v-if="fetchedDeck.isLoading">Uploading Deck...</p>
+            <ol v-if="fetchedDeck.data && fetchedDeck.data.length > 0 && !fetchedDeck.isLoading">
+                <li v-for="(card, index) in fetchedDeck.data" :key="index">
+                    <template v-if="card">
+                        {{ card.name }} - {{ card.quantity }}
+                    </template>
+                </li>
+            </ol>
+
+            <template #footer>
+                <button 
+                    v-if="Object.keys(gameState.you).length === 0"
+                    :class="['btn', 'bg-primary', {'disabled' : !fetchedDeck.data}]"
+                    @click="join()">
+                        Join
+                </button>
+                <p v-else>Waiting for other players to join...</p>
+            </template>
+        </ModalsGlobal>
     </div>
 </template>
 
 <script setup lang="ts">
+    import { ModalsGlobal } from '#components';
     import { useGameStore } from '~/stores/game';
-    import type { Card } from '~/types/Card';
+    import type { Card, GameCard } from '~/types/Card';
     import type { Player } from '~/types/Player';
 
     let gameState = useGameStore()
-    const selectedTab = ref('library')
+    const selectedTab: Ref<string> = ref('library')
+    const selectedPlayerTab: Ref<null | Player> = ref(null)
+    const modalState: Ref<{isActive: boolean, type: string | null, data: Object}> = ref({isActive: false, type: 'playerGraveyard', data: Object})
+    const fetchedDeck: Ref<{data: Card[] | null, isLoading: boolean}> = ref({data: null, isLoading: false})
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
 
     const join = () => {
-        gameState.join()
+        if(fetchedDeck.value.data && fetchedDeck.value.data.length > 0) {
+            gameState.join()
+            const you: Player = gameState.you
+            you.cards = fetchedDeck.value.data
+            gameState.cardsToLibrary()
+            gameState.shuffle()
+            gameState.updatePlayer(you)
+            modalState.value.isActive = false; 
+        }
+    }
+
+    const showPlayerZone = (zoneType: string, zone: GameCard[]) => {
+        modalState.value.isActive   = true
+        modalState.value.type       = zoneType
+        modalState.value.data       = zone
     }
 
     async function fetchCardsFromFile(file: File) {
@@ -99,7 +159,7 @@
                 data.data.forEach((d: { name: any; id: any; image_uris: any; power: string, toughness: string }) => {
                     if(d.name === cardIdentifier.name) {
                         cards.push({
-                            id:         d.id, 
+                            sourceId:         d.id, 
                             name:       d.name, 
                             imageUris:  d.image_uris, 
                             quantity:   cardIdentifier.quantity,
@@ -110,10 +170,9 @@
                 })
             })
         }
-        const you: Player = gameState.you
-        you.cards = cards
 
-        gameState.updatePlayer(you)
+        fetchedDeck.value.data = cards;
+        fetchedDeck.value.isLoading = false;
     }
 
     onMounted(() => {
@@ -122,6 +181,7 @@
         document.getElementById("fileInput")?.addEventListener("change", (event) => {
             const file = (event.target as HTMLInputElement).files?.[0];
             if (file) {
+                fetchedDeck.value.isLoading = true
                 fetchCardsFromFile(file);
             }
         });
@@ -174,4 +234,49 @@
         }
     }
     
+    #players-stats {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        .player-stats-con {
+            h4 {
+                
+            }
+            ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                background: #A68B6D;
+                li {
+                    border-bottom: 1px solid #1a1a1a31;
+                    padding: 5px 8px;
+                    cursor: pointer;
+                    &:last-child {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
+    }
+
+    .zone-card-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        column-gap: 4px;
+        justify-content: center;
+    }
+
+    .join-modal {
+        ol {
+            max-height: 150px;
+            overflow: auto;
+            height: 150px;
+            li {
+
+            }
+        }
+    }
 </style>

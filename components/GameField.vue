@@ -56,7 +56,7 @@
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
-    const modalState = ref<{isActive: boolean, type: string | null}>({isActive: false, type: null})
+    const modalState: Ref<{isActive: boolean, type: string | null}> = ref({isActive: false, type: null})
     
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
@@ -88,15 +88,23 @@
         }
     }
 
-    const updateCardLabel = (player: Player, card: GameCard) => {
-        const key = player.id + '-' + card.id;
-        if (cardLabels.has(key)) {
-            const cardLabelContainer = cardLabels.get(key);
-            if(cardLabelContainer) {
-                const label = cardLabelContainer.children.find(child => child instanceof Text) as Text | undefined;
-                if (label) {
-                    label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
-                }
+    const updateCardLabel = (card: GameCard, cardLabelContainer: Container | undefined, cardSprite: Sprite) => {
+        if(cardLabelContainer) {
+            if(card.isTapped) {
+                const cardWidthHalf = cardSprite.width / 2
+                const labelWidthHalf = cardLabelContainer.width / 2
+                const cardHeightHalf = cardSprite.height / 2
+                cardLabelContainer.x = cardSprite.x + cardHeightHalf - labelWidthHalf;
+                cardLabelContainer.y = cardSprite.y - cardWidthHalf + labelWidthHalf;
+            }
+            else {
+                cardLabelContainer.x = cardSprite.x + (cardSprite.width / 2) - (cardLabelContainer.width / 2);
+                cardLabelContainer.y = cardSprite.y + (cardSprite.height) / 2 - (cardLabelContainer.height / 2);
+            }
+
+            const label = cardLabelContainer.children.find(child => child instanceof Text) as Text | undefined;
+            if (label) {
+                label.text = `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`;
             }
         }
     };
@@ -143,16 +151,19 @@
                         const existingCardSprites = cardSprites.get(key);
 
                         if(selectedCard.value && selectedCard.value?.id === card.id && existingCardSprites) {
-                            if(card.isTapped)
+                            if(card.isTapped) {
                                 existingCardSprites.rotation = -Math.PI / 2;
+                            }
                             else
                                 existingCardSprites.rotation = 0;
                             
                             existingCardSprites.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
+
+                            if (cardLabels.has(key)) {
+                                updateCardLabel(card, cardLabels.get(key), existingCardSprites)
+                            }
                         }
 
-                        updateCardLabel(getYourInfo.value, card)
-                            
                         battleFieldCardsUpdate.push(card)
                         return;
                     }
@@ -174,8 +185,8 @@
                         fontWeight: "bold",
                     });
                     const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
-                    cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
-                    cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
+                    cardLabelContainer.x = cardTexture.x + (cardTexture.width / 2) - (cardLabelContainer.width / 2);
+                    cardLabelContainer.y = cardTexture.y + (cardTexture.height) / 2 - (cardLabelContainer.height / 2);
                     app.stage.addChild(cardLabelContainer);
                     cardLabels.set(key, cardLabelContainer);
 
@@ -230,6 +241,7 @@
                                 if (item.id === card.id) {
                                     item.posX = cardTexture.x;
                                     item.posY = cardTexture.y;
+                                    selectedCard.value = card as GameCard | null
                                     return item;
                                 }
                                 return item;
@@ -248,7 +260,6 @@
                                 const position = event.data.getLocalPosition(cardTexture.parent);
                                 item.posX = position.x - offsetX
                                 item.posY = position.y - offsetY
-                                selectedCard.value = card as GameCard | null
                                 return item
                             }
                             return item
@@ -318,17 +329,12 @@
                                 if (cardLabels.has(key)) {
                                     const cardLabelContainer = cardLabels.get(key);
                                     if(cardLabelContainer) {
-                                        // cardLabelContainer.x = card.posX + cardTexture.width / 2 - 20;
-                                        // cardLabelContainer.y = card.posY + cardTexture.height / 2 - 15;
+                                        // cardLabelContainer.x = existingCardSprites.x + (existingCardSprites.width / 2) - (cardLabelContainer.width / 2);
+                                        // cardLabelContainer.y = existingCardSprites.y + (existingCardSprites.height / 2) - (cardLabelContainer.height / 2);
 
-                                        cardLabelContainer.x = existingCardSprites.x - 20;
-                                        cardLabelContainer.y = existingCardSprites.y - 15;
+                                        updateCardLabel(card, cardLabelContainer, existingCardSprites)
                                     }
                                 }
-
-                                
-
-                                updateCardLabel(opponent, card)
                             }
                             
                             
@@ -374,6 +380,7 @@
                 
                             // Bring the dragged card to the top
                             app.stage.setChildIndex(cardTexture, app.stage.children.length - 1);
+                            app.stage.setChildIndex(cardLabelContainer, app.stage.children.length - 1);
                         });
 
                         // Handle mouse up (stop dragging)
@@ -438,7 +445,6 @@
     #gamefield {
         display: flex;
         justify-content: center;
-        background: #5A5A5A;
         padding: 52px 24px;
         section {
             &:nth-child(1) {

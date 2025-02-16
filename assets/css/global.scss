@@ -4,7 +4,7 @@ body {
     margin: 0;
     font-family: poppins;
 }
-h1, h2, h3, h4 {
+h1, h2, h3, h4, p {
     margin: 0;
 }
 .zone-con {
@@ -14,5 +14,36 @@ h1, h2, h3, h4 {
         flex-direction: column;
         row-gap: 5px;
         overflow: auto;
+    }
+}
+
+.bg-primary {
+    background: #008C99;
+    color: #fff;
+    &.muted {
+        background: #2E4A5F;
+        color: #fff;
+    }
+}
+.bg-secondary {
+    background: #3A0066;
+    color: #fff;
+}
+.bg-tertiary {
+    background: #C5A100;
+    color: #fff;
+}
+
+.btn {
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: .6s;
+
+    &.disabled {
+        pointer-events: none;
+        opacity: .6;
     }
 }

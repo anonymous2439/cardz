@@ -60,16 +60,23 @@ export const useGameStore = defineStore('game', {
     },
     cardsToLibrary() {
       this.$patch(state => {
-        const library: GameCard[] = state.you.cards.map(card => ({
-          ...card,
-          isRevealed: false,
-          isFaceUp: false,
-          isTapped: false,
-          posX: 0,
-          posY: 0,
-          powerCounter: 0,
-          toughnessCounter: 0,
-        }));
+        const library: GameCard[] = [];
+        state.you.cards.forEach(card => {
+          for(let i=0; i<card.quantity; i++) {
+            library.push ({
+              ...card,
+              id: card.sourceId + '-' +(i+1),
+              isRevealed: false,
+              isFaceUp: false,
+              isTapped: false,
+              posX: 0,
+              posY: 0,
+              powerCounter: 0,
+              toughnessCounter: 0,
+            } as GameCard);
+          }
+          
+        });
     
         // Update the library
         state.you.zone.library = [...library];

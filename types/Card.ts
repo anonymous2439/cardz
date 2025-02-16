@@ -1,7 +1,7 @@
 import type { Player } from "./Player";
 
 export interface Card {
-    id: string,
+    sourceId: string,
     name: string,
     imageUris: string,
     quantity: number,
@@ -10,6 +10,7 @@ export interface Card {
 }
 
 export interface GameCard extends Card {
+    id: string,
     isRevealed: boolean;
     isFaceUp: boolean;
     isTapped: boolean;

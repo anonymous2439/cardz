@@ -14,10 +14,10 @@
         <template #header>
             Select Card Face
         </template>
-        <button @click="selectCardFace(true)">Face Up</button>
-        <button @click="selectCardFace(false)">Face Down</button>
+        <button @click="selectCardFace(true)" class="btn bg-primary">Face Up</button>
+        <button @click="selectCardFace(false)" class="btn bg-primary muted">Face Down</button>
         <template #footer>
-            <button @click="modalState.isActive = false">Close</button>
+            <button @click="modalState.isActive = false" class="btn bg-primary">Close</button>
         </template>
     </ModalsGlobal>
 </template>
