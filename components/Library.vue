@@ -8,7 +8,7 @@
             </div>
             <ul>
                 <li v-for="(card, i) in gameState.you.zone.library.slice().reverse()" :key="i">
-                    <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.JPEG'" />
+                    <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.jpeg'" />
                     <template v-if="card.isFaceUp && !modalState.isActive">
                         <button @click="pick(card)">Pick</button>
                         <button 

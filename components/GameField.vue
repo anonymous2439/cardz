@@ -143,7 +143,7 @@
                 const loadPromises = getYourInfo.value.zone.battlefield.map(async (card) => {
 
                     const faceUpTexture     = await Assets.load(card.imageUris.small);
-                    const faceDownTexture   = await Assets.load('/back-small.JPEG');
+                    const faceDownTexture   = await Assets.load('/back-small.jpeg');
                     const key               = getYourInfo.value.id + '-' + card.id;
 
                     // Check if the card already exists
@@ -308,7 +308,7 @@
                     const loadPromises = opponent.zone.battlefield.map(async (card) => {
 
                         const faceUpTexture     = await Assets.load(card.imageUris.small);
-                        const faceDownTexture   = await Assets.load('/back-small.JPEG');
+                        const faceDownTexture   = await Assets.load('/back-small.jpeg');
                         const key               = opponent.id + '-' + card.id;
 
                         // Check if the card already exists
