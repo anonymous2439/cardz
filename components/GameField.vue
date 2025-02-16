@@ -247,7 +247,7 @@
                                 return item;
                             });
 
-                            gameState.updatePlayer(getYourInfo.value);
+                            // gameState.updatePlayer(getYourInfo.value);
                         }
                     });
 
