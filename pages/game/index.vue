@@ -156,12 +156,13 @@
         const cards: Card[] = []
         if(data && data.data) {
             cardIdentifiers.forEach((cardIdentifier: any) => {
-                data.data.forEach((d: { name: any; id: any; image_uris: any; power: string, toughness: string }) => {
+                data.data.forEach((d: { name: any; id: any; image_uris: any; all_parts: object[] | null; power: string, toughness: string }) => {
                     if(d.name === cardIdentifier.name) {
                         cards.push({
-                            sourceId:         d.id, 
+                            sourceId:   d.id, 
                             name:       d.name, 
                             imageUris:  d.image_uris, 
+                            allParts:   d.all_parts || null,
                             quantity:   cardIdentifier.quantity,
                             power:      !isNaN(parseInt(d.power)) ? parseInt(d.power) : 0,
                             toughness:  !isNaN(parseInt(d.toughness)) ? parseInt(d.toughness) : 0,

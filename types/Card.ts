@@ -7,6 +7,7 @@ export interface Card {
     quantity: number,
     power: number;
     toughness: number;
+    allParts: Object[] | null;
 }
 
 export interface GameCard extends Card {

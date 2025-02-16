@@ -50,7 +50,6 @@
     }
 
     const isHovered = (hovered: boolean, card: GameCard) => {
-        console.log("hovered:",card)
         if(hovered)
             hoveredCard.value = card
         else

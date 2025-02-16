@@ -10,6 +10,7 @@
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
+                        <li><button @click="addToken()">Add Token</button></li>
                         <li><button @click="showAttributes">Attributes</button></li>
                     </ul>
                     <img :src="selectedCard.imageUris.normal" />
@@ -20,7 +21,7 @@
             </section>
         </div>
 
-        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes'">
+        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes' && modalState.data">
             <template #header>
                 Select Card Face
             </template>
@@ -42,6 +43,26 @@
                 <button @click="modalState.isActive = false">Close</button>
             </template>
         </ModalsGlobal>
+
+        <ModalsGlobal v-else-if="modalState.isActive && modalState.type == 'addToken'">
+            <template #header>
+                Choose token to add
+            </template>
+            
+            <template v-if="selectedCard">
+                <ul>
+                    <template v-for="(data, index) in modalState.data" :key="index">
+                        <li>
+                            <img :src="data.small" />
+                        </li>
+                    </template>
+                </ul>
+            </template>
+
+            <template #footer>
+                <button @click="modalState.isActive = false">Close</button>
+            </template>
+        </ModalsGlobal>
     </div>
 </template>
   
@@ -56,7 +77,7 @@
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
-    const modalState: Ref<{isActive: boolean, type: string | null}> = ref({isActive: false, type: null})
+    const modalState: Ref<{isActive: boolean, type: string | null, data: any | null}> = ref({isActive: false, type: null, data: null})
     
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
@@ -69,7 +90,6 @@
     }
 
     const updateStats = (type: string, value: number) => {
-        console.log("reset:",value)
         if(selectedCard.value) {
             getYourInfo.value.zone.battlefield = getYourInfo.value.zone.battlefield.map(card => {
                 if(card.id === selectedCard?.value?.id)  {
@@ -109,6 +129,25 @@
             }
         }
     };
+
+    const addToken = () => {
+        modalState.value.isActive = true
+        modalState.value.type = 'addToken'
+
+        modalState.value.data = []
+        if(selectedCard.value?.allParts) {
+            selectedCard.value.allParts.forEach(async (part: any) => {
+                if(part.object === 'related_card' && part.component === 'token') {
+                    const response = await fetch(part.uri, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" },
+                    });
+                    const data: any = await response.json();
+                    modalState.value.data.push(data.image_uris)
+                }
+            })
+        }
+    }
     
     onMounted(async () => {
         let canvasWidth     = 1200

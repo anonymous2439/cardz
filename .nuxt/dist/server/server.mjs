@@ -588,7 +588,7 @@ const _routes = [
   {
     name: "game",
     path: "/game",
-    component: () => import("./_nuxt/index-CoPDzyzO.js")
+    component: () => import("./_nuxt/index-BwGgSBbi.js")
   },
   {
     name: "index",
