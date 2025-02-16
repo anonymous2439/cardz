@@ -3,7 +3,7 @@ import { WebSocketServer } from "ws";
 export default defineNitroPlugin(() => {
     if (process.client) return; // Prevent execution on the client
 
-    const wss = new WebSocketServer({ host: '0.0.0.0', port: 8080 });
+    const wss = new WebSocketServer({ host: '128.199.126.14', port: 8080 });
 
     const broadcastPlayerCount = () => {
         const playerCount = wss.clients.size;
@@ -28,9 +28,10 @@ export default defineNitroPlugin(() => {
 
         ws.on("close", () => {
             console.log("Client disconnected");
-            setTimeout(() => broadcastPlayerCount(), 100);
+            if(wss.clients.size > 0)
+                setTimeout(() => broadcastPlayerCount(), 100);
         });
     });
 
-    console.log("✅ WebSocket server is running on ws://localhost:8080");
+    console.log("✅ WebSocket server is running on ws://128.199.126.14:8080");
 });
