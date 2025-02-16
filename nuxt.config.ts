@@ -8,4 +8,9 @@ export default defineNuxtConfig({
       wsEndpoint: process.env.WS_ENDPOINT || "ws://localhost:8081",
     },
   },
+  vite: {
+    server: {
+      hmr: false,
+    },
+  },
 });
