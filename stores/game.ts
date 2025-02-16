@@ -34,6 +34,14 @@ export const useGameStore = defineStore('game', {
 
       this.you = you
       this.addPlayer(you)
+
+      if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
+        const message = {
+            players : this.$state.players,
+            playerLastId : this.$state.playerLastId,
+        }
+        this.$state.ws.send(JSON.stringify(message));
+      }
     },
     incrementConnected() {
       this.$state.connectedCount++;
@@ -276,7 +284,7 @@ export const useGameStore = defineStore('game', {
      * Websocket initialization
      */
     startWebSocketServer() {
-      this.$state.ws = new WebSocket('ws://localhost:8080');
+      this.$state.ws = new WebSocket('ws://128.199.126.14:8080');
 
       this.$state.ws.onmessage = (event) => {
           const eventData = JSON.parse(event.data);
