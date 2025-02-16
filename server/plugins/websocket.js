@@ -3,7 +3,8 @@ import { WebSocketServer } from "ws";
 export default defineNitroPlugin(() => {
     if (process.client) return; // Prevent execution on the client
 
-    const wss = new WebSocketServer({ host: '128.199.126.14', port: 8080 });
+    // const wss = new WebSocketServer({ host: '128.199.126.14', port: 8080 });
+    const wss = new WebSocketServer({ port: 8080 });
 
     const broadcastPlayerCount = () => {
         const playerCount = wss.clients.size;
