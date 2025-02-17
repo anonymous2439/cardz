@@ -10,7 +10,7 @@
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
                         <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
-                        <li><button @click="addToken()">Add Token</button></li>
+                        <li><button @click="addToken">Add Token</button></li>
                         <li><button @click="showAttributes">Attributes</button></li>
                     </ul>
                     <img :src="selectedCard.imageUris.normal" />
@@ -46,14 +46,14 @@
 
         <ModalsGlobal v-else-if="modalState.isActive && modalState.type == 'addToken'">
             <template #header>
-                Choose token to add
+                Click a token to add to the battlefield
             </template>
             
             <template v-if="selectedCard">
                 <ul>
                     <template v-for="(data, index) in modalState.data" :key="index">
                         <li>
-                            <img :src="data.small" />
+                            <img :src="data.imageUris.small" @click="gameState.addToken(data)" />
                         </li>
                     </template>
                 </ul>
@@ -70,7 +70,7 @@
     import { useGameStore } from '~/stores/game';
     import { onMounted, ref, computed, watch } from 'vue';
     import { Application, Assets, Sprite, InteractionEvent, Text, Graphics, Container } from 'pixi.js';
-    import type { GameCard } from '~/types/Card';
+    import type { GameCard, Token } from '~/types/Card';
     import type { Player } from '~/types/Player';
     
     const gameState = useGameStore();
@@ -143,9 +143,22 @@
                         headers: { "Content-Type": "application/json" },
                     });
                     const data: any = await response.json();
-                    modalState.value.data.push(data.image_uris)
+                    const token: Token = {
+                        id: data.id,
+                        isRevealed: true,
+                        isFaceUp: true,
+                        isTapped: false,
+                        posX: data.power | 0,
+                        posY: data.toughness | 0,
+                        powerCounter: 0,
+                        toughnessCounter: 0,
+                        referenceCard: selectedCard.value as GameCard,
+                        imageUris: data.image_uris,
+                    }
+                    modalState.value.data.push(token)
                 }
             })
+            console.log("tokens:",modalState.value.data)
         }
     }
     

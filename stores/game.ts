@@ -169,7 +169,18 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
           player.id === this.$state.you.id ? this.$state.you : player
       );
-      console.log("broadcasting")
+      this.broadcastChanges()
+    },
+    addToken(card: GameCard) {
+      const timestamp = Date.now();
+      const newCard = Object.assign({}, card);
+      newCard.id = card.id + '-' + timestamp
+      this.$state.you.zone['battlefield'].push(card);
+  
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => 
+          player.id === this.$state.you.id ? this.$state.you : player
+      );
       this.broadcastChanges()
     },
     giveToOpponent(card: GameCard, opponent: Player, fromZone: string, toZone: string) {
