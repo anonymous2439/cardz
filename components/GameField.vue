@@ -158,7 +158,6 @@
                     modalState.value.data.push(token)
                 }
             })
-            console.log("tokens:",modalState.value.data)
         }
     }
     
@@ -299,7 +298,7 @@
                                 return item;
                             });
 
-                            // gameState.updatePlayer(getYourInfo.value);
+                            gameState.updatePlayer(getYourInfo.value);
                         }
                     });
 
