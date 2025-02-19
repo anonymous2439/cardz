@@ -3,18 +3,28 @@
 
         <div id="gamefield">
             <section>
-                <div class="card-info" v-if="selectedCard">
-                    <ul>
-                        <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
-                        <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
-                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
-                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
-                        <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
-                        <li><button @click="addToken">Add Token</button></li>
-                        <li><button @click="showAttributes">Attributes</button></li>
-                    </ul>
-                    <img :src="selectedCard.imageUris.normal" />
-                </div>
+                <template v-if="selectedCard">
+                    <div class="card-info">
+
+                        <!-- If selected card is token -->
+                        <ul v-if="selectedCard.hasOwnProperty('referenceCard')">
+                            <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
+                            <li><button @click="gameState.destroyCard(selectedCard)">Destroy</button></li>
+                        </ul>
+                        
+                        <ul v-else>
+                            <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
+                            <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
+                            <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
+                            <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
+                            <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
+                            <li><button @click="addToken">Add Token</button></li>
+                            <li><button @click="showAttributes">Attributes</button></li>
+                        </ul>
+
+                        <img :src="selectedCard.imageUris.normal" />
+                    </div>
+                </template>
             </section>
             <section class="pixi-section">
                 <div id="pixiContainer" ref="pixiContainer"></div>
@@ -44,7 +54,7 @@
             </template>
         </ModalsGlobal>
 
-        <ModalsGlobal v-else-if="modalState.isActive && modalState.type == 'addToken'">
+        <ModalsGlobal v-else-if="modalState.isActive && modalState.type == 'addToken'" class="modal-tokens">
             <template #header>
                 Click a token to add to the battlefield
             </template>
@@ -148,8 +158,10 @@
                         isRevealed: true,
                         isFaceUp: true,
                         isTapped: false,
-                        posX: data.power | 0,
-                        posY: data.toughness | 0,
+                        posX: 0,
+                        posY: 0,
+                        power: parseInt(data.power) | 0,
+                        toughness: parseInt(data.toughness) | 0,
                         powerCounter: 0,
                         toughnessCounter: 0,
                         referenceCard: selectedCard.value as GameCard,
@@ -298,7 +310,7 @@
                                 return item;
                             });
 
-                            gameState.updatePlayer(getYourInfo.value);
+                            // gameState.updatePlayer(getYourInfo.value);
                         }
                     });
 
@@ -523,6 +535,20 @@
                         }
                     }
                 }
+            }
+        }
+    }
+
+    .modal-tokens {
+        ul {
+            display: flex;
+            column-gap: 5px;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+            overflow: auto;
+            li {
+                list-style: none;
             }
         }
     }

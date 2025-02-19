@@ -175,11 +175,20 @@ export const useGameStore = defineStore('game', {
       const timestamp = Date.now();
       const newCard = Object.assign({}, card);
       newCard.id = card.id + '-' + timestamp
-      this.$state.you.zone['battlefield'].push(card);
+      this.$state.you.zone['battlefield'].push(newCard);
   
       // Sync your info to the players list
       this.$state.players = this.$state.players.map(player => 
           player.id === this.$state.you.id ? this.$state.you : player
+      );
+      this.broadcastChanges()
+    },
+    destroyCard(card: GameCard, zone='battlefield') {
+      this.$state.you.zone[zone] = this.$state.you.zone[zone].filter((item: GameCard) => (item.id !== card.id))
+
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => 
+        player.id === this.$state.you.id ? this.$state.you : player
       );
       this.broadcastChanges()
     },

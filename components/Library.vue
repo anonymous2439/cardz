@@ -47,9 +47,9 @@
             <button @click="selectedCard ? moveToBottomLibrary() : () => {}">
                 Move to Bottom Library
             </button>
-            <!-- <button @click="toBattlefield()">To Battlefield</button>
-            <button @click="selectedCard ? gameState.changeZone(selectedCard, 'hand', 'graveyard') : ()=>{}">To Graveyard</button>
-            <button @click="selectedCard ? gameState.changeZone(selectedCard, 'hand', 'exile') : ()=>{}">To Exile</button> -->
+            <button @click="toBattlefield()">To Battlefield</button>
+            <button @click="selectedCard ? gameState.changeZone(selectedCard, 'library', 'graveyard') : ()=>{}">To Graveyard</button>
+            <button @click="selectedCard ? gameState.changeZone(selectedCard, 'library', 'exile') : ()=>{}">To Exile</button>
             <!-- <button @click="giveToOpponent(card)">Give to Opponent</button> -->
 
             <template #footer>
@@ -100,8 +100,7 @@
         }
     }
 
-    const toBattlefield = (card:GameCard) => {
-        selectedCard.value          = card
+    const toBattlefield = () => {
         modalState.value.isActive   = true
         modalState.value.type       = 'cardFace'
     }
@@ -110,7 +109,7 @@
         if(selectedCard.value) {
             selectedCard.value.isFaceUp     = isFaceUp
             selectedCard.value.isRevealed   = isFaceUp
-            gameState.changeZone(selectedCard.value, 'hand', 'battlefield')
+            gameState.changeZone(selectedCard.value, 'library', 'battlefield')
             modalState.value.isActive = false
         }
     }
