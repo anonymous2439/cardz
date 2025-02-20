@@ -8,7 +8,8 @@
             </div>
             <ul>
                 <li v-for="(card, i) in gameState.you.zone.library.slice().reverse()" :key="i">
-                    <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.jpeg'" />
+                    <img class="magnified-zone" v-if="hoveredCard && hoveredCard.id === card.id && card.isFaceUp" :src="card.imageUris.normal"/>
+                    <img :src="card.isFaceUp ? card.imageUris.small : '/back-small.jpeg'" @mouseover="isHovered(true, card)" @mouseleave="isHovered(false, card)"/>
                     <template v-if="card.isFaceUp && !modalState.isActive">
                         <button @click="pick(card)">Pick</button>
                         <button 
@@ -76,6 +77,7 @@
     const gameState = useGameStore()
     const modalState = ref<{isActive: boolean, type: string | null}>({isActive: false, type: null})
     const selectedCard = ref<GameCard | null>(null)
+    const hoveredCard: Ref<GameCard | null> = ref(null)
 
     const reveal = () => {
         modalState.value.type = 'reveal'
@@ -113,6 +115,13 @@
             modalState.value.isActive = false
         }
     }
+
+    const isHovered = (hovered: boolean, card: GameCard) => {
+        if(hovered)
+            hoveredCard.value = card
+        else
+            hoveredCard.value = null
+    }
 </script>
 
 <style scoped lang="scss">
@@ -125,9 +134,6 @@
                 list-style: none;
                 display: flex;
                 flex-direction: column;
-                img {
-                    pointer-events: none;
-                }
             }
         }
     }

@@ -255,6 +255,18 @@ export const useGameStore = defineStore('game', {
       })
       this.broadcastChanges()
     },
+    untapAllCards()  {
+      this.$state.you.zone.battlefield.map(battleFieldCard => {
+          battleFieldCard.isTapped = !battleFieldCard.isTapped
+          return battleFieldCard
+      })
+
+      // Sync your info to the players list
+      this.$state.players = this.$state.players.map(player => 
+        player.id === this.$state.you.id ? this.$state.you : player
+      );
+      this.broadcastChanges()
+    },
     revealCard(card: GameCard, zone='battlefield') {
       this.$state.you.zone[zone].map(z => {
         if(z.id === card.id) {

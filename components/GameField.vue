@@ -14,6 +14,7 @@
                         
                         <ul v-else>
                             <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
+                            <li><button @click="gameState.untapAllCards()">Untap All</button></li>
                             <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
                             <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
                             <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
@@ -175,7 +176,7 @@
     
     onMounted(async () => {
         let canvasWidth     = 1200
-        let canvasHeight    = 950
+        let canvasHeight    = 1050
         const app = new Application();
         await app.init({ background: '#2C3E50', width: canvasWidth, height: canvasHeight });
     
@@ -214,7 +215,7 @@
                     if (cardSprites.has(key)) {
                         const existingCardSprites = cardSprites.get(key);
 
-                        if(selectedCard.value && selectedCard.value?.id === card.id && existingCardSprites) {
+                        if(card && card.id === card.id && existingCardSprites) {
                             if(card.isTapped) {
                                 existingCardSprites.rotation = -Math.PI / 2;
                             }
@@ -505,7 +506,7 @@
     #gamefield {
         display: flex;
         justify-content: center;
-        padding: 52px 24px;
+        padding: 40px 24px;
         section {
             &:nth-child(1) {
                 order: 1;
@@ -515,7 +516,7 @@
             &.pixi-section {
                 box-shadow: -2px 9px 28px -2px #1a1a1a;
                 width: calc(1200px * 0.65);
-                height: calc(950px * 0.65);
+                height: calc(1050px * 0.65);
             }
             .card-info {
                 display: flex;

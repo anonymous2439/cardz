@@ -82,15 +82,5 @@
         }
     }
 
-    .magnified-zone {
-        position:fixed; 
-        left: 50%; 
-        top: 5px;
-        z-index: 10; 
-        pointer-events: none;
-        transform: translateX(-50%);
-        scale: 0.7;
-        transform-origin: top left;
-        box-shadow: 0 0 45px 22px #C5A100;
-    }
+    
 </style>
