@@ -8,7 +8,8 @@
                 <button @click="gameState.changeZone(card, 'hand', 'graveyard')">To Graveyard</button>
                 <button @click="gameState.changeZone(card, 'hand', 'exile')">To Exile</button>
                 <button @click="gameState.changeZone(card, 'hand', 'library')">To Library</button>
-                <button @click="giveToOpponent(card)">Give to Opponent</button>
+                <button @click="gameState.revealCard(card, 'hand')" v-if="!card.isRevealed">Reveal</button>
+                <!-- <button @click="giveToOpponent(card)">Give to Opponent</button> -->
             </li>
         </ul>
     </div>

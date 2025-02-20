@@ -160,6 +160,11 @@ export const useGameStore = defineStore('game', {
             removedCard.isRevealed  = false
             removedCard.isTapped    = false
           }
+          else if(['graveyard', 'exile'].includes(toZone)) {
+            removedCard.isFaceUp    = true
+            removedCard.isRevealed  = true
+            removedCard.isTapped    = false
+          }
   
           // Push the removed card to the toZone
           this.$state.you.zone[toZone].push(removedCard);
@@ -250,16 +255,16 @@ export const useGameStore = defineStore('game', {
       })
       this.broadcastChanges()
     },
-    revealCard(card: GameCard) {
-      this.$state.you.zone.battlefield.map(battleFieldCard => {
-        if(battleFieldCard.id === card.id) {
-          battleFieldCard.isFaceUp          = true
-          battleFieldCard.isRevealed        = true
-          battleFieldCard.powerCounter      = 0
-          battleFieldCard.toughnessCounter  = 0
-          return battleFieldCard
+    revealCard(card: GameCard, zone='battlefield') {
+      this.$state.you.zone[zone].map(z => {
+        if(z.id === card.id) {
+          z.isFaceUp          = true
+          z.isRevealed        = true
+          z.powerCounter      = 0
+          z.toughnessCounter  = 0
+          return z
         }
-        return battleFieldCard
+        return z
       })
 
       // Sync your info to the players list

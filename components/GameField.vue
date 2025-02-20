@@ -31,7 +31,7 @@
             </section>
         </div>
 
-        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes' && modalState.data">
+        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'showAttributes'">
             <template #header>
                 Select Card Face
             </template>

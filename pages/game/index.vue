@@ -19,7 +19,7 @@
                         <li>Battlefield: {{ player.zone.battlefield.length }}</li>
                         <li @click="showPlayerZone('playerGraveyard', player.zone.graveyard)">Graveyard: {{ player.zone.graveyard.length }}</li>
                         <li @click="showPlayerZone('playerExile', player.zone.exile)">Exile: {{ player.zone.exile.length }}</li>
-                        <li>Hand: {{ player.zone.hand.length }}</li>
+                        <li @click="showPlayerZone('playerHand', player.zone.hand)">Hand: {{ player.zone.hand.length }}</li>
                     </ul>
                 </div>
             </div>
@@ -45,16 +45,19 @@
             </div>
         </template>
 
-        <ModalsGlobal v-if="modalState.isActive && modalState.type && ['playerGraveyard', 'playerExile'].includes(modalState.type)">
+        <ModalsGlobal v-if="modalState.isActive && modalState.type && ['playerGraveyard', 'playerExile', 'playerHand'].includes(modalState.type)">
             <template #header>
                 <template v-if="modalState.type == 'playerGraveyard'">Graveyard</template>
                 <template v-else-if="modalState.type == 'playerExile'">Exile</template>
+                <template v-else-if="modalState.type == 'playerHand'">Hand</template>
             </template>
             
             <ul class="zone-card-list">
-                <li v-for="(card, index) in modalState.data" :key="index">
-                    <img :src="card.imageUris.small" />
-                </li>
+                <template v-for="(card, index) in modalState.data" :key="index">
+                    <li v-if="card.isRevealed">
+                        <img :src="card.imageUris.small" />
+                    </li>
+                </template>
             </ul>
 
             <template #footer>
