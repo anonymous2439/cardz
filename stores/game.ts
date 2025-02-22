@@ -257,7 +257,7 @@ export const useGameStore = defineStore('game', {
     },
     untapAllCards()  {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
-          battleFieldCard.isTapped = !battleFieldCard.isTapped
+          battleFieldCard.isTapped = false
           return battleFieldCard
       })
 

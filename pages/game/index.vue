@@ -1,13 +1,13 @@
 <template>
     <div id="game-page">
-        <template v-if="Object.keys(gameState.you).length > 0 && (getConnectedCount === gameState.getPlayers.length)">
+        <template v-if="Object.keys(gameState.getYourInfo).length > 0 && (getConnectedCount === gameState.getPlayers.length)">
             <div id="players-stats">
                 <div class="player-stats-con" v-for="(player, index) in gameState.players" :key="index">
                     <button 
                         @click="selectedPlayerTab && selectedPlayerTab.id === player.id 
                             ? selectedPlayerTab = null 
                             : selectedPlayerTab = player">
-                                {{ player.name }} | h: {{ player.health }}
+                                {{ gameState.getYourInfo.id === player.id ? '(You) ' : '' }} {{ player.name }} | h: {{ player.health }}
                     </button>
                     <ul v-if="selectedPlayerTab && selectedPlayerTab.id === player.id">
                         <li>health: {{ player.health }} 
