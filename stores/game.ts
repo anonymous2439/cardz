@@ -150,6 +150,22 @@ export const useGameStore = defineStore('game', {
         this.broadcastChanges()
       }
     },
+    drawCards(count=0) {
+      if(this.you.zone.library.length > 0) {
+        for(let i=0; i<count; i++) {
+          const card: GameCard = this.$state.you.zone.library.pop() as GameCard
+          this.$state.you.zone.hand.push(card)
+        }
+        
+        // Sync your info to the players list
+        this.$state.players = this.$state.players.map(player => {
+          if(player.id === this.$state.you.id)
+            return this.$state.you
+          return player
+        })
+        this.broadcastChanges()
+      }
+    },
     changeZone(card: GameCard, fromZone: string, toZone: string) {
       // Find the card in the fromZone and remove it
       const cardIndex = this.$state.you.zone[fromZone].findIndex((item:GameCard) => item.id === card.id);

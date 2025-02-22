@@ -89,13 +89,7 @@ const useGameStore = defineStore("game", {
       };
       this.you = you;
       this.addPlayer(you);
-      if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
-        const message = {
-          players: this.$state.players,
-          playerLastId: this.$state.playerLastId
-        };
-        this.$state.ws.send(JSON.stringify(message));
-      }
+      this.broadcastChanges();
     },
     incrementConnected() {
       this.$state.connectedCount++;
@@ -103,8 +97,10 @@ const useGameStore = defineStore("game", {
     decrementConnected() {
       this.$state.connectedCount--;
     },
-    setPlayers(players) {
-      this.$state.players = players;
+    setPlayer(player) {
+      this.$state.players = this.$state.players.map(
+        (p) => p.id === player.id ? player : p
+      );
     },
     setLastPlayerId(id) {
       this.$state.playerLastId = id;
@@ -331,10 +327,14 @@ const useGameStore = defineStore("game", {
       this.$state.ws.onmessage = (event) => {
         const eventData = JSON.parse(event.data);
         if (eventData.hasOwnProperty("type")) {
-          console.log("eventdata:", eventData);
-          if (eventData.type === "updatePlayers" && JSON.stringify(eventData.data.players) !== JSON.stringify(this.$state.players)) {
-            this.setPlayers(eventData.data.players);
-            this.$state.playerLastId = eventData.data.playerLastId;
+          if (eventData.type === "updatePlayers") {
+            const opponent = this.$state.players.find((player) => player.id === eventData.data.player.id);
+            if (!opponent || opponent === void 0) {
+              this.$state.players.push(eventData.data.player);
+            } else if (JSON.stringify(eventData.data.player) !== JSON.stringify(opponent)) {
+              this.setPlayer(eventData.data.player);
+              this.$state.playerLastId = eventData.data.playerLastId;
+            }
           } else if (eventData.type === "updatePlayerCount") {
             this.$state.connectedCount = eventData.data;
           }
@@ -348,7 +348,7 @@ const useGameStore = defineStore("game", {
     broadcastChanges() {
       if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
         const message = {
-          players: this.$state.players,
+          player: this.$state.you,
           playerLastId: this.$state.playerLastId
         };
         this.$state.ws.send(JSON.stringify(message));
@@ -1136,4 +1136,4 @@ const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-69f7
 export {
   index as default
 };
-//# sourceMappingURL=index-D0KRFPsl.js.map
+//# sourceMappingURL=index-CV5oXwiS.js.map

@@ -2,7 +2,7 @@
     <div id="library-zone" class="zone">
         <div class="zone-con" v-if="gameState?.you?.zone?.library?.length > 0">
             <div class="zone-options">
-                <button @click="gameState.drawCard">Draw a card</button>
+                <button @click="modalState.isActive = true;modalState.type = 'draw'">Draw</button>
                 <button @click="reveal()">Reveal</button>
                 <button @click="shuffle()">Shuffle</button>
             </div>
@@ -67,6 +67,16 @@
                 <button @click="modalState.isActive = false">Close</button>
             </template>
         </ModalsGlobal>
+        <ModalsGlobal v-else-if="modalState.isActive && modalState.type == 'draw'">
+            <template #header>
+                Draw number of cards
+            </template>
+            <input v-model="drawnCardsCount" type="number"/>
+            <template #footer>
+                <button @click="modalState.isActive = false">Close</button>
+                <button @click="drawCards">Accept</button>
+            </template>
+        </ModalsGlobal>
     </template>
 </template>
 
@@ -78,6 +88,7 @@
     const modalState = ref<{isActive: boolean, type: string | null}>({isActive: false, type: null})
     const selectedCard = ref<GameCard | null>(null)
     const hoveredCard: Ref<GameCard | null> = ref(null)
+    const drawnCardsCount: Ref<number> = ref(1)
 
     const reveal = () => {
         modalState.value.type = 'reveal'
@@ -121,6 +132,11 @@
             hoveredCard.value = card
         else
             hoveredCard.value = null
+    }
+
+    const drawCards = () => {
+        modalState.value.isActive = false
+        gameState.drawCards(drawnCardsCount.value)
     }
 </script>
 
