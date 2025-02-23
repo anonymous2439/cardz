@@ -709,7 +709,7 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "wsEndpoint": "wss://cardz.bounceme.net/ws/"
+    "wsEndpoint": "ws://localhost:8081"
   }
 };
 const envOptions = {

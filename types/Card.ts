@@ -8,6 +8,8 @@ export interface Card {
     power: number,
     toughness: number,
     allParts: Object[] | null,
+    producedMana: Object | null,
+    manaValue: number | null,
 }
 
 export interface GameCard extends Card {

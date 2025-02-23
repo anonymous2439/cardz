@@ -33,6 +33,7 @@
                         <li @click="selectedTab = 'hand'" class="tab-hand">Hand</li>
                         <li @click="selectedTab = 'graveyard'" class="tab-graveyard">Graveyard</li>
                         <li @click="selectedTab = 'exile'" class="tab-exile">Exile</li>
+                        <!-- <li @click="selectedTab = 'stack'" class="tab-stack">stack</li> -->
                         <li @click="selectedTab = 'minimized'">Minimized</li>
                     </ul>
                 </div>
@@ -41,6 +42,7 @@
                     <section v-show="selectedTab === 'hand'" class="tab-hand"><Hand/></section>
                     <section v-show="selectedTab === 'graveyard'" class="tab-graveyard"><Graveyard /></section>
                     <section v-show="selectedTab === 'exile'" class="tab-exile"><Exile /></section>
+                    <!-- <section v-show="selectedTab === 'stack'" class="tab-stack"><Stack /></section> -->
                 </div>
             </div>
         </template>
@@ -94,19 +96,39 @@
                 <p v-else>Waiting for other players to join...</p>
             </template>
         </ModalsGlobal>
+
+        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'manaCounter'">
+            <template #header>
+                Mana Counter
+            </template>
+                <h4>Casting "{{ modalState.data.name }}"</h4>
+                <ul>
+                    <li>Black: 0</li>
+                    <li>Green: 0</li>
+                    <li>Red: 0</li>
+                    <li>Blue: 0</li>
+                    <li>White: 0</li>
+                </ul>
+                <h4>Total: 0</h4>
+            <template #footer>
+                <button @click="modalState.isActive = false" class="btn bg-primary">Close</button>
+                <!-- <button @click="gameState.changeZone(card, 'hand', 'graveyard')" class="btn bg-primary">Accept</button> -->
+            </template>
+        </ModalsGlobal>
     </div>
 </template>
 
 <script setup lang="ts">
     import { ModalsGlobal } from '#components';
+    import Stack from '~/components/Stack.vue';
     import { useGameStore } from '~/stores/game';
     import type { Card, GameCard } from '~/types/Card';
     import type { Player } from '~/types/Player';
 
     let gameState = useGameStore()
-    const selectedTab: Ref<string> = ref('library')
+    const selectedTab: Ref<string> = useState('selectedTab', () => 'library')
     const selectedPlayerTab: Ref<null | Player> = ref(null)
-    const modalState: Ref<{isActive: boolean, type: string | null, data: Object}> = ref({isActive: false, type: 'playerGraveyard', data: Object})
+    const modalState = useState<{isActive: boolean, type: string | null, data: any}>('modalState', () => ({isActive: false, type: null, data: null}))
     const fetchedDeck: Ref<{data: Card[] | null, isLoading: boolean}> = ref({data: null, isLoading: false})
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
@@ -158,8 +180,18 @@
         const data: any = await response.json();
         const cards: Card[] = []
         if(data && data.data) {
+            console.log("card data:",data.data)
             cardIdentifiers.forEach((cardIdentifier: any) => {
-                data.data.forEach((d: { name: any; id: any; image_uris: any; all_parts: object[] | null; power: string, toughness: string }) => {
+                data.data.forEach((d: { 
+                        name: any,
+                        id: any,
+                        image_uris: any,
+                        all_parts: object[] | null,
+                        power: string, 
+                        toughness: string, 
+                        produced_mana: object, 
+                        mana_value: number 
+                    }) => {
                     if(d.name === cardIdentifier.name) {
                         cards.push({
                             sourceId:   d.id, 
@@ -169,6 +201,8 @@
                             quantity:   cardIdentifier.quantity,
                             power:      !isNaN(parseInt(d.power)) ? parseInt(d.power) : 0,
                             toughness:  !isNaN(parseInt(d.toughness)) ? parseInt(d.toughness) : 0,
+                            producedMana: d.produced_mana || null,
+                            manaValue: d.mana_value || null,
                         })
                     }
                 })

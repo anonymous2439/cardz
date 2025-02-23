@@ -4,6 +4,7 @@
             <li v-for="(card, i) in gameState.you.zone.hand" :key="i">
                 <img class="magnified-zone" v-if="hoveredCard && hoveredCard.id === card.id" :src="card.imageUris.normal"/>
                 <img :src="card.imageUris.small" @mouseover="isHovered(true, card)" @mouseleave="isHovered(false, card)" />
+                <!-- <button @click="cast(card)">Cast</button> -->
                 <button @click="toBattlefield(card)">To Battlefield</button>
                 <button @click="gameState.changeZone(card, 'hand', 'graveyard')">To Graveyard</button>
                 <button @click="gameState.changeZone(card, 'hand', 'exile')">To Exile</button>
@@ -31,9 +32,18 @@
     import type { Player } from '~/types/Player';
 
     const gameState = useGameStore()
-    const modalState = useState<{isActive: boolean, type: string | null}>('modalState', () => ({isActive: false, type: null}))
+    const modalState = useState<{isActive: boolean, type: string | null, data: any}>('modalState', () => ({isActive: false, type: null, data: null}))
     const selectedCard: Ref<GameCard | null> = ref(null)
     const hoveredCard: Ref<GameCard | null> = ref(null)
+    const selectedTab = useState('selectedTab')
+
+    const cast = (card:GameCard) => {
+        selectedCard.value          = card
+        modalState.value.isActive   = true
+        modalState.value.type       = 'manaCounter'
+        modalState.value.data       = card
+        selectedTab.value           = 'minimized'
+    }
 
     const toBattlefield = (card:GameCard) => {
         selectedCard.value          = card

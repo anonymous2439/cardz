@@ -6,4 +6,5 @@ export interface Zone {
     library: GameCard[],
     hand: GameCard[],
     exile: GameCard[],
+    stack: GameCard[],
 }
