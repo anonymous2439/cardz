@@ -10,6 +10,7 @@
                             <!-- all card related options -->
                             <ul>
                                 <li><button @click="gameState.untapAllCards()">Untap All</button></li>
+				<li><button @click="isMultiSelect = !isMultiSelect">Multi Select</button></li>
                             </ul>
 
                             <label>Card Options</label>
@@ -100,9 +101,11 @@
     
     const gameState = useGameStore();
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
+    const selectedCards = useState<GameCard[]>('selectedCards', () => [])
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
     const modalState: Ref<{isActive: boolean, type: string | null, data: any | null}> = ref({isActive: false, type: null, data: null})
+    const isMultiSelect: Ref<boolean> = ref(false)
     
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
@@ -339,6 +342,9 @@
                                 item.posX = position.x - offsetX
                                 item.posY = position.y - offsetY
                                 selectedCard.value = card as GameCard | null
+				if(isMultiSelect.value) {
+					selectedCards.value.push(card as GameCard);
+				}
                                 return item
                             }
                             return item
