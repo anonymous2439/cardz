@@ -132,12 +132,13 @@
     }
 
     const selectCardFace = (isFaceUp = true) => {
-        if(selectedCard.value) {
-            selectedCard.value.isFaceUp     = isFaceUp
-            selectedCard.value.isRevealed   = isFaceUp
-            gameState.changeZone(selectedCard.value, 'library', 'battlefield')
+        selectedCards.value.forEach(card => {
+            card.isFaceUp     = isFaceUp
+            card.isRevealed   = isFaceUp
+            gameState.changeZone(card, 'library', 'battlefield')
             modalState.value.isActive = false
-        }
+        });
+        selectedCards.value = []
     }
 
     const isHovered = (hovered: boolean, card: GameCard) => {
@@ -164,17 +165,30 @@
     }
 
     const moveTo = (dest:string) => {
-        if(['battlefield', 'exile', 'graveyard'].includes(dest)) {
-            selectedCards.value.forEach(card => {
-                gameState.changeZone(card, 'library', dest)
-            });
+        switch(dest) {
+            case 'exile':
+            case 'graveyard':
+                selectedCards.value.forEach(card => {
+                    gameState.changeZone(card, 'library', dest)
+                });
+                modalState.value.isActive = false
+                selectedCards.value = []
+            break;
+
+            case 'battlefield':
+                modalState.value.type = 'cardFace'
+            break;
+            
+            case 'bottom':
+                selectedCards.value.forEach(card => {
+                    gameState.moveToBottomLibrary(card)
+                });
+                modalState.value.isActive = false
+                selectedCards.value = []
+            break;
         }
-        else if(dest === 'bottom'){
-            selectedCards.value.forEach(card => {
-                gameState.moveToBottomLibrary(card)
-            });
-        }
-        selectedCards.value = []
+
+        
     }
 </script>
 

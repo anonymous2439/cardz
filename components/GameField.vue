@@ -100,6 +100,7 @@
     
     const gameState = useGameStore();
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
+    const selectedCards = useState<GameCard[]>('selectedCards', () => [])
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
     const modalState: Ref<{isActive: boolean, type: string | null, data: any | null}> = ref({isActive: false, type: null, data: null})
@@ -108,6 +109,7 @@
     const pixiContainer = ref<any>(null);
     const cardSprites = new Map<string, Sprite>();  // A map to track the card sprites by ID
     const cardLabels = new Map<string, Container>(); // Track labels for updating
+    const cardContainers = new Map<string, Container[]>();
 
     const showAttributes = () => {
         modalState.value.isActive   = true
@@ -266,6 +268,12 @@
                     const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
                     cardLabelContainer.x = cardTexture.x + (cardTexture.width / 2) - (cardLabelContainer.width / 2);
                     cardLabelContainer.y = cardTexture.y + (cardTexture.height) / 2 - (cardLabelContainer.height / 2);
+
+                    // const cardContainer = new Container()
+                    // cardContainer.x  = app.screen.width / 2;
+                    // cardContainer.y = app.screen.height / 2;
+                    // cardContainer.addChild(cardTexture)
+
                     app.stage.addChild(cardLabelContainer);
                     cardLabels.set(key, cardLabelContainer);
 

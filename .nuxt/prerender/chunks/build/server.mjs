@@ -603,7 +603,7 @@ const _routes = [
   {
     name: "game",
     path: "/game",
-    component: () => import('./index-UkI1Hg5P.mjs')
+    component: () => import('./index-D4DHFd38.mjs')
   },
   {
     name: "index",

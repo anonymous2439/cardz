@@ -1,38 +1,24 @@
-import { defineComponent, ref, computed, mergeProps, unref, withCtx, createVNode, createBlock, openBlock, Fragment, renderList, createCommentVNode, createTextVNode, toDisplayString, toRef, isRef, withDirectives, vModelText, useSSRContext } from 'file://D:/cardz/node_modules/vue/index.mjs';
-import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderComponent, ssrRenderStyle, ssrRenderAttr, ssrRenderClass, ssrRenderSlot } from 'file://D:/cardz/node_modules/vue/server-renderer/index.mjs';
-import { _ as _export_sfc, b as useRuntimeConfig, a as useNuxtApp } from './server.mjs';
-import { defineStore } from 'file://D:/cardz/node_modules/pinia/dist/pinia.prod.cjs';
-import 'file://D:/cardz/node_modules/ofetch/dist/node.mjs';
-import '../_/renderer.mjs';
-import 'file://D:/cardz/node_modules/vue-bundle-renderer/dist/runtime.mjs';
-import 'file://D:/cardz/node_modules/h3/dist/index.mjs';
-import 'file://D:/cardz/node_modules/devalue/index.js';
-import 'file://D:/cardz/node_modules/ufo/dist/index.mjs';
-import 'file://D:/cardz/node_modules/@unhead/ssr/dist/index.mjs';
-import 'file://D:/cardz/node_modules/unhead/dist/index.mjs';
-import '../_/nitro.mjs';
-import 'file://D:/cardz/node_modules/destr/dist/index.mjs';
-import 'file://D:/cardz/node_modules/hookable/dist/index.mjs';
-import 'file://D:/cardz/node_modules/unenv/runtime/fetch/index.mjs';
-import 'file://D:/cardz/node_modules/klona/dist/index.mjs';
-import 'file://D:/cardz/node_modules/defu/dist/defu.mjs';
-import 'file://D:/cardz/node_modules/scule/dist/index.mjs';
-import 'node:fs';
-import 'node:url';
-import 'file://D:/cardz/node_modules/pathe/dist/index.mjs';
-import 'file://D:/cardz/node_modules/ohash/dist/index.mjs';
-import 'file://D:/cardz/node_modules/unstorage/dist/index.mjs';
-import 'file://D:/cardz/node_modules/unstorage/drivers/fs.mjs';
-import 'file:///D:/cardz/node_modules/nuxt/dist/core/runtime/nitro/cache-driver.js';
-import 'file://D:/cardz/node_modules/unstorage/drivers/fs-lite.mjs';
-import 'file://D:/cardz/node_modules/radix3/dist/index.mjs';
-import 'file://D:/cardz/node_modules/@unhead/shared/dist/index.mjs';
-import 'file://D:/cardz/node_modules/unctx/dist/index.mjs';
-import 'file://D:/cardz/node_modules/vue-router/dist/vue-router.node.mjs';
-
+import { toRef, isRef, mergeProps, useSSRContext, defineComponent, computed, ref, unref, withCtx, createBlock, createCommentVNode, openBlock, Fragment, createVNode, createTextVNode, toDisplayString, renderList, withDirectives, vModelText } from "vue";
+import { ssrRenderAttrs, ssrRenderSlot, ssrRenderAttr, ssrRenderComponent, ssrInterpolate, ssrRenderList, ssrRenderClass, ssrRenderStyle } from "vue/server-renderer";
+import { a as useNuxtApp, _ as _export_sfc, b as useRuntimeConfig } from "../server.mjs";
+import { defineStore } from "pinia";
+import "pixi.js";
+import "ofetch";
+import "#internal/nuxt/paths";
+import "hookable";
+import "unctx";
+import "h3";
+import "defu";
+import "unhead";
+import "@unhead/shared";
+import "vue-router";
+import "radix3";
+import "ufo";
+import "destr";
+import "klona";
 const useStateKeyPrefix = "$s";
 function useState(...args) {
-  const autoKey = typeof args[args.length - 1] === "string" ? args.pop() : undefined;
+  const autoKey = typeof args[args.length - 1] === "string" ? args.pop() : void 0;
   if (typeof args[0] !== "string") {
     args.unshift(autoKey);
   }
@@ -40,13 +26,13 @@ function useState(...args) {
   if (!_key || typeof _key !== "string") {
     throw new TypeError("[nuxt] [useState] key must be a string: " + _key);
   }
-  if (init !== undefined && typeof init !== "function") {
+  if (init !== void 0 && typeof init !== "function") {
     throw new Error("[nuxt] [useState] init must be a function: " + init);
   }
   const key = useStateKeyPrefix + _key;
   const nuxtApp = useNuxtApp();
   const state = toRef(nuxtApp.payload.state, key);
-  if (state.value === undefined && init) {
+  if (state.value === void 0 && init) {
     const initialValue = init();
     if (isRef(initialValue)) {
       nuxtApp.payload.state[key] = initialValue;
@@ -70,7 +56,7 @@ const _sfc_setup$6 = _sfc_main$6.setup;
 _sfc_main$6.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/modals/global.vue");
-  return _sfc_setup$6 ? _sfc_setup$6(props, ctx) : undefined;
+  return _sfc_setup$6 ? _sfc_setup$6(props, ctx) : void 0;
 };
 const ModalsGlobal = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["ssrRender", _sfc_ssrRender], ["__scopeId", "data-v-c8789715"]]);
 const useGameStore = defineStore("game", {
@@ -357,7 +343,7 @@ const useGameStore = defineStore("game", {
         if (eventData.hasOwnProperty("type")) {
           if (eventData.type === "updatePlayers") {
             const opponent = this.$state.players.find((player) => player.id === eventData.data.player.id);
-            if (!opponent || opponent === undefined) {
+            if (!opponent || opponent === void 0) {
               this.$state.players.push(eventData.data.player);
             } else if (JSON.stringify(eventData.data.player) !== JSON.stringify(opponent)) {
               this.setPlayer(eventData.data.player);
@@ -398,7 +384,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
       if (selectedCard.value) {
         getYourInfo.value.zone.battlefield = getYourInfo.value.zone.battlefield.map((card) => {
           var _a;
-          if (card.id === ((_a = selectedCard == null ? undefined : selectedCard.value) == null ? undefined : _a.id)) {
+          if (card.id === ((_a = selectedCard == null ? void 0 : selectedCard.value) == null ? void 0 : _a.id)) {
             switch (type) {
               case "power":
                 card.powerCounter = value;
@@ -557,7 +543,7 @@ const _sfc_setup$5 = _sfc_main$5.setup;
 _sfc_main$5.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/GameField.vue");
-  return _sfc_setup$5 ? _sfc_setup$5(props, ctx) : undefined;
+  return _sfc_setup$5 ? _sfc_setup$5(props, ctx) : void 0;
 };
 const __nuxt_component_0 = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-aa30d0b7"]]);
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
@@ -567,18 +553,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const gameState = useGameStore();
     const modalState = ref({ isActive: false, type: null });
     const selectedCard = ref(null);
+    const selectedCards = ref([]);
     const hoveredCard = ref(null);
     const drawnCardsCount = ref(1);
-    const moveToBottomLibrary = () => {
-      if (selectedCard.value) {
-        gameState.moveToBottomLibrary(selectedCard.value);
-        modalState.value.isActive = false;
-      }
-    };
-    const toBattlefield = () => {
-      modalState.value.isActive = true;
-      modalState.value.type = "cardFace";
-    };
     const selectCardFace = (isFaceUp = true) => {
       if (selectedCard.value) {
         selectedCard.value.isFaceUp = isFaceUp;
@@ -591,33 +568,51 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       modalState.value.isActive = false;
       gameState.drawCards(drawnCardsCount.value);
     };
+    const moveTo = (dest) => {
+      if (["battlefield", "exile", "graveyard"].includes(dest)) {
+        selectedCards.value.forEach((card) => {
+          gameState.changeZone(card, "library", dest);
+        });
+      } else if (dest === "bottom") {
+        selectedCards.value.forEach((card) => {
+          gameState.moveToBottomLibrary(card);
+        });
+      }
+      selectedCards.value = [];
+    };
     return (_ctx, _push, _parent, _attrs) => {
       var _a, _b, _c, _d;
       const _component_ModalsGlobal = ModalsGlobal;
-      _push(`<!--[--><div id="library-zone" class="zone" data-v-ba6c9f68>`);
-      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? undefined : _a.you) == null ? undefined : _b.zone) == null ? undefined : _c.library) == null ? undefined : _d.length) > 0) {
-        _push(`<div class="zone-con" data-v-ba6c9f68><div class="zone-options" data-v-ba6c9f68><button data-v-ba6c9f68>Draw</button><button data-v-ba6c9f68>Reveal</button><button data-v-ba6c9f68>Shuffle</button></div><ul data-v-ba6c9f68><!--[-->`);
+      _push(`<!--[--><div id="library-zone" class="zone" data-v-219ca986>`);
+      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? void 0 : _a.you) == null ? void 0 : _b.zone) == null ? void 0 : _c.library) == null ? void 0 : _d.length) > 0) {
+        _push(`<div class="zone-con" data-v-219ca986><div class="zone-options" data-v-219ca986><button data-v-219ca986>Draw</button><button data-v-219ca986>Reveal</button><button data-v-219ca986>Shuffle</button><label data-v-219ca986>Selected: ${ssrInterpolate(unref(selectedCards).length)}</label><button data-v-219ca986>Move to</button></div><ul data-v-219ca986><!--[-->`);
         ssrRenderList(unref(gameState).you.zone.library.slice().reverse(), (card, i) => {
-          _push(`<li data-v-ba6c9f68>`);
+          _push(`<li data-v-219ca986>`);
           if (unref(hoveredCard) && unref(hoveredCard).id === card.id && card.isFaceUp) {
-            _push(`<img class="magnified-zone"${ssrRenderAttr("src", card.imageUris.normal)} data-v-ba6c9f68>`);
+            _push(`<img class="magnified-zone"${ssrRenderAttr("src", card.imageUris.normal)} data-v-219ca986>`);
           } else {
             _push(`<!---->`);
           }
-          _push(`<img${ssrRenderAttr("src", card.isFaceUp ? card.imageUris.small : "/back-small.jpeg")} data-v-ba6c9f68>`);
-          if (card.isFaceUp && !unref(modalState).isActive) {
-            _push(`<!--[--><button data-v-ba6c9f68>Pick</button>`);
-            if (i < unref(gameState).you.zone.library.slice().reverse().length - 1 && unref(gameState).you.zone.library.slice().reverse()[i + 1].isFaceUp) {
-              _push(`<button data-v-ba6c9f68> &gt;&gt; </button>`);
-            } else {
-              _push(`<!---->`);
-            }
+          _push(`<figure data-v-219ca986><img${ssrRenderAttr("src", card.isFaceUp ? card.imageUris.small : "/back-small.jpeg")} class="${ssrRenderClass(["card-img", { selected: unref(selectedCards).length && unref(selectedCards).find((item) => item.id === card.id) }])}" data-v-219ca986>`);
+          if (unref(selectedCards).length && unref(selectedCards).find((item) => item.id === card.id)) {
+            _push(`<figcaption data-v-219ca986>${ssrInterpolate(unref(selectedCards).findIndex((item) => item.id === card.id) + 1)}</figcaption>`);
+          } else {
+            _push(`<!---->`);
+          }
+          _push(`</figure>`);
+          if (card.isFaceUp && !unref(selectedCards).length) {
+            _push(`<div class="shift-cards" data-v-219ca986>`);
             if (i > 0 && unref(gameState).you.zone.library.slice().reverse()[i - 1].isFaceUp) {
-              _push(`<button data-v-ba6c9f68> &lt;&lt; </button>`);
+              _push(`<button data-v-219ca986> &lt;&lt; </button>`);
             } else {
               _push(`<!---->`);
             }
-            _push(`<!--]-->`);
+            if (i < unref(gameState).you.zone.library.slice().reverse().length - 1 && unref(gameState).you.zone.library.slice().reverse()[i + 1].isFaceUp) {
+              _push(`<button data-v-219ca986> &gt;&gt; </button>`);
+            } else {
+              _push(`<!---->`);
+            }
+            _push(`</div>`);
           } else {
             _push(`<!---->`);
           }
@@ -643,7 +638,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             footer: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Close</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Close</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -654,7 +649,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             default: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Reveal 1</button><button data-v-ba6c9f68${_scopeId}>Reveal All</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Reveal 1</button><button data-v-219ca986${_scopeId}>Reveal All</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -671,20 +666,20 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             _: 1
           }, _parent));
-        } else if (unref(modalState).type == "pick") {
+        } else if (unref(modalState).type == "moveTo") {
           _push(ssrRenderComponent(_component_ModalsGlobal, null, {
             header: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(` Pick `);
+                _push2(` Move to `);
               } else {
                 return [
-                  createTextVNode(" Pick ")
+                  createTextVNode(" Move to ")
                 ];
               }
             }),
             footer: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Close</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Close</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -695,23 +690,20 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             default: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}> Move to Bottom Library </button><button data-v-ba6c9f68${_scopeId}>To Battlefield</button><button data-v-ba6c9f68${_scopeId}>To Graveyard</button><button data-v-ba6c9f68${_scopeId}>To Exile</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Move to Bottom Library</button><button data-v-219ca986${_scopeId}>To Battlefield</button><button data-v-219ca986${_scopeId}>To Graveyard</button><button data-v-219ca986${_scopeId}>To Exile</button>`);
               } else {
                 return [
                   createVNode("button", {
-                    onClick: ($event) => unref(selectedCard) ? moveToBottomLibrary() : () => {
-                    }
-                  }, " Move to Bottom Library ", 8, ["onClick"]),
+                    onClick: ($event) => moveTo("bottom")
+                  }, "Move to Bottom Library", 8, ["onClick"]),
                   createVNode("button", {
-                    onClick: ($event) => toBattlefield()
+                    onClick: ($event) => moveTo("battlefield")
                   }, "To Battlefield", 8, ["onClick"]),
                   createVNode("button", {
-                    onClick: ($event) => unref(selectedCard) ? unref(gameState).changeZone(unref(selectedCard), "library", "graveyard") : () => {
-                    }
+                    onClick: ($event) => moveTo("graveyard")
                   }, "To Graveyard", 8, ["onClick"]),
                   createVNode("button", {
-                    onClick: ($event) => unref(selectedCard) ? unref(gameState).changeZone(unref(selectedCard), "library", "exile") : () => {
-                    }
+                    onClick: ($event) => moveTo("exile")
                   }, "To Exile", 8, ["onClick"])
                 ];
               }
@@ -731,7 +723,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             footer: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Close</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Close</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -742,7 +734,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             default: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Face Up</button><button data-v-ba6c9f68${_scopeId}>Face Down</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Face Up</button><button data-v-219ca986${_scopeId}>Face Down</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -769,7 +761,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             footer: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<button data-v-ba6c9f68${_scopeId}>Close</button><button data-v-ba6c9f68${_scopeId}>Accept</button>`);
+                _push2(`<button data-v-219ca986${_scopeId}>Close</button><button data-v-219ca986${_scopeId}>Accept</button>`);
               } else {
                 return [
                   createVNode("button", {
@@ -780,14 +772,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }
             }),
             default: withCtx((_, _push2, _parent2, _scopeId) => {
+              var _a2, _b2, _c2, _d2, _e, _f, _g, _h;
               if (_push2) {
-                _push2(`<input${ssrRenderAttr("value", unref(drawnCardsCount))} type="number" data-v-ba6c9f68${_scopeId}>`);
+                _push2(`<input${ssrRenderAttr("value", unref(drawnCardsCount))} type="number" min="1"${ssrRenderAttr("max", (_d2 = (_c2 = (_b2 = (_a2 = unref(gameState)) == null ? void 0 : _a2.you) == null ? void 0 : _b2.zone) == null ? void 0 : _c2.library) == null ? void 0 : _d2.length)} data-v-219ca986${_scopeId}>`);
               } else {
                 return [
                   withDirectives(createVNode("input", {
                     "onUpdate:modelValue": ($event) => isRef(drawnCardsCount) ? drawnCardsCount.value = $event : null,
-                    type: "number"
-                  }, null, 8, ["onUpdate:modelValue"]), [
+                    type: "number",
+                    min: "1",
+                    max: (_h = (_g = (_f = (_e = unref(gameState)) == null ? void 0 : _e.you) == null ? void 0 : _f.zone) == null ? void 0 : _g.library) == null ? void 0 : _h.length
+                  }, null, 8, ["onUpdate:modelValue", "max"]), [
                     [vModelText, unref(drawnCardsCount)]
                   ])
                 ];
@@ -810,9 +805,9 @@ const _sfc_setup$4 = _sfc_main$4.setup;
 _sfc_main$4.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Library.vue");
-  return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : undefined;
+  return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const __nuxt_component_1 = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-ba6c9f68"]]);
+const __nuxt_component_1 = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-219ca986"]]);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "Hand",
   __ssrInlineRender: true,
@@ -834,7 +829,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       var _a, _b, _c, _d;
       const _component_ModalsGlobal = ModalsGlobal;
       _push(`<!--[--><div id="hand-zone" class="zone" data-v-f78f77a8>`);
-      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? undefined : _a.you) == null ? undefined : _b.zone) == null ? undefined : _c.hand) == null ? undefined : _d.length) > 0) {
+      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? void 0 : _a.you) == null ? void 0 : _b.zone) == null ? void 0 : _c.hand) == null ? void 0 : _d.length) > 0) {
         _push(`<ul data-v-f78f77a8><!--[-->`);
         ssrRenderList(unref(gameState).you.zone.hand, (card, i) => {
           _push(`<li data-v-f78f77a8>`);
@@ -908,7 +903,7 @@ const _sfc_setup$3 = _sfc_main$3.setup;
 _sfc_main$3.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Hand.vue");
-  return _sfc_setup$3 ? _sfc_setup$3(props, ctx) : undefined;
+  return _sfc_setup$3 ? _sfc_setup$3(props, ctx) : void 0;
 };
 const __nuxt_component_2 = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-f78f77a8"]]);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
@@ -923,7 +918,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         id: "graveyard-zone",
         class: "zone"
       }, _attrs))} data-v-de91d82b>`);
-      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? undefined : _a.you) == null ? undefined : _b.zone) == null ? undefined : _c.graveyard) == null ? undefined : _d.length) > 0) {
+      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? void 0 : _a.you) == null ? void 0 : _b.zone) == null ? void 0 : _c.graveyard) == null ? void 0 : _d.length) > 0) {
         _push(`<ul data-v-de91d82b><!--[-->`);
         ssrRenderList(unref(gameState).you.zone.graveyard, (card, i) => {
           _push(`<li data-v-de91d82b>`);
@@ -946,7 +941,7 @@ const _sfc_setup$2 = _sfc_main$2.setup;
 _sfc_main$2.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Graveyard.vue");
-  return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : undefined;
+  return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : void 0;
 };
 const __nuxt_component_3 = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-de91d82b"]]);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
@@ -961,7 +956,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         id: "exile-zone",
         class: "zone"
       }, _attrs))} data-v-8d0f99ba>`);
-      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? undefined : _a.you) == null ? undefined : _b.zone) == null ? undefined : _c.exile) == null ? undefined : _d.length) > 0) {
+      if (((_d = (_c = (_b = (_a = unref(gameState)) == null ? void 0 : _a.you) == null ? void 0 : _b.zone) == null ? void 0 : _c.exile) == null ? void 0 : _d.length) > 0) {
         _push(`<ul data-v-8d0f99ba><!--[-->`);
         ssrRenderList(unref(gameState).you.zone.exile, (card, i) => {
           _push(`<li data-v-8d0f99ba>`);
@@ -984,7 +979,7 @@ const _sfc_setup$1 = _sfc_main$1.setup;
 _sfc_main$1.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/Exile.vue");
-  return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : undefined;
+  return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
 const __nuxt_component_4 = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-8d0f99ba"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
@@ -1248,9 +1243,10 @@ const _sfc_setup = _sfc_main.setup;
 _sfc_main.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/game/index.vue");
-  return _sfc_setup ? _sfc_setup(props, ctx) : undefined;
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
 const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c1b3e9fd"]]);
-
-export { index as default };
-//# sourceMappingURL=index-UkI1Hg5P.mjs.map
+export {
+  index as default
+};
+//# sourceMappingURL=index-D4DHFd38.js.map
