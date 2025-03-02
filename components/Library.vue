@@ -57,10 +57,11 @@
                 Move to
             </template>
 
-            <button @click="moveTo('bottom')">Move to Bottom Library</button>
-            <button @click="moveTo('battlefield')">To Battlefield</button>
-            <button @click="moveTo('graveyard')">To Graveyard</button>
-            <button @click="moveTo('exile')">To Exile</button>
+            <button @click="moveTo('bottom')">Bottom of Library</button>
+            <button @click="moveTo('hand')">Hand</button>
+            <button @click="moveTo('battlefield')">battlefield</button>
+            <button @click="moveTo('graveyard')">Graveyard</button>
+            <button @click="moveTo('exile')">Exile</button>
             <!-- <button @click="giveToOpponent(card)">Give to Opponent</button> -->
 
             <template #footer>
@@ -166,6 +167,7 @@
 
     const moveTo = (dest:string) => {
         switch(dest) {
+            case 'hand':
             case 'exile':
             case 'graveyard':
                 selectedCards.value.forEach(card => {

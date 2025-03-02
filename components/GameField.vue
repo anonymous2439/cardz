@@ -138,15 +138,14 @@
     const updateCardLabel = (card: GameCard, cardLabelContainer: Container | undefined, cardSprite: Sprite) => {
         if(cardLabelContainer) {
             if(card.isTapped) {
-                const cardWidthHalf = cardSprite.width / 2
-                const labelWidthHalf = cardLabelContainer.width / 2
-                const cardHeightHalf = cardSprite.height / 2
-                cardLabelContainer.x = cardSprite.x + cardHeightHalf - labelWidthHalf;
-                cardLabelContainer.y = cardSprite.y - cardWidthHalf + labelWidthHalf;
+                cardLabelContainer.x = cardSprite.width / 2 - (cardLabelContainer.width / 2)
+                cardLabelContainer.y = cardSprite.height / 2 - (cardLabelContainer.height / 2)
+                cardLabelContainer.rotation = Math.PI / 2;
             }
             else {
                 cardLabelContainer.x = cardSprite.x + (cardSprite.width / 2) - (cardLabelContainer.width / 2);
                 cardLabelContainer.y = cardSprite.y + (cardSprite.height) / 2 - (cardLabelContainer.height / 2);
+                cardLabelContainer.rotation = 0
             }
 
             const label = cardLabelContainer.children.find(child => child instanceof Text) as Text | undefined;
@@ -211,14 +210,6 @@
                         cardContainers.delete(key);  // Remove from map
                     }
                 }
-                // Remove labels from the battlefield
-                for (const [key, text] of cardLabels.entries()) {
-                    if (key.startsWith(getYourInfo.value.id + '-') && 
-                        !getYourInfo.value.zone.battlefield.some(card => getYourInfo.value.id+'-'+card.id === key)) {
-                        text.destroy();  // Remove from PIXI
-                        cardLabels.delete(key);  // Remove from map
-                    }
-                }
 
                 // Loop through the battlefield cards
                 const loadPromises = getYourInfo.value.zone.battlefield.map(async (card) => {
@@ -226,23 +217,27 @@
                     const faceUpTexture     = await Assets.load(card.imageUris.small);
                     const faceDownTexture   = await Assets.load('/back-small.jpeg');
                     const key               = getYourInfo.value.id + '-' + card.id;
+                    let isDragging          = false;
+                    let offsetX             = 0;
+                    let offsetY             = 0;
 
                     // Check if the card already exists
                     if (cardContainers.has(key)) {
-                        const existingCardContainers = cardContainers.get(key);
+                        const existingCardContainer = cardContainers.get(key);
 
-                        if(card && card.id === card.id && existingCardContainers) {
-                            if(card.isTapped) {
-                                existingCardContainers.rotation = -Math.PI / 2;
-                            }
+                        if(card && card.id === card.id && existingCardContainer) {
+                            if(card.isTapped)
+                                existingCardContainer.rotation = -Math.PI / 2;
                             else
-                                existingCardContainers.rotation = 0;
-                            
-                                // existingCardContainers.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
+                                existingCardContainer.rotation = 0;
 
-                            if (cardLabels.has(key)) {
-                                // updateCardLabel(card, cardLabels.get(key), existingCardContainers)
+                            const labelContainer    = existingCardContainer.children.find(child => (child.name === 'labelContainer')) as Sprite
+                            const cardTexture       = existingCardContainer.children.find(child => (child.name === 'cardTexture')) as Sprite
+                            if(labelContainer && cardTexture) {
+                                cardTexture.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
+                                updateCardLabel(card, labelContainer, cardTexture)
                             }
+
                         }
 
                         battleFieldCardsUpdate.push(card)
@@ -256,14 +251,12 @@
             
                     // If card does not exist, load and add it
                     const cardTexture = new Sprite(card.isFaceUp ? faceUpTexture : faceDownTexture);
-                    // cardSprites.set(key, cardTexture); // Track the sprite by card id
             
                     cardTexture.anchor.set(0.5);
-                    cardTexture.x = 0;
-                    cardTexture.y = 0;
-                    
+                    cardTexture.x       = 0;
+                    cardTexture.y       = 0;
+                    cardTexture.name    = 'cardTexture'
                     cardContainer.addChild(cardTexture)
-                    
 
                     // Create a text label below the card
                     const cardLabel = new Text(`${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`, {
@@ -273,8 +266,9 @@
                         fontWeight: "bold",
                     });
                     const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
-                    cardLabelContainer.x  = 0
-                    cardLabelContainer.y  = 0
+                    cardLabelContainer.x = cardTexture.x + (cardTexture.width / 2) - (cardLabelContainer.width / 2);
+                    cardLabelContainer.y = cardTexture.y + (cardTexture.height) / 2 - (cardLabelContainer.height / 2);
+                    cardLabelContainer.name = 'labelContainer'
                     cardContainer.addChild(cardLabelContainer)
 
                     //  Add the card container to the game field
@@ -288,23 +282,18 @@
                     // Enable interaction for dragging
                     cardContainer.interactive = true;
                     cardContainer.buttonMode = true;
-            
-                    let isDragging = false;
-                    let offsetX = 0;
-                    let offsetY = 0;
 
                     gameState.broadcastChanges()
             
                     // Handle mouse down (begin dragging)
                     cardContainer.on('pointerdown', (event: InteractionEvent) => {
                         isDragging = true;
-                        // const position = event.data.getLocalPosition(cardContainer.parent);
-                        // offsetX = position.x - cardContainer.x;
-                        // offsetY = position.y - cardContainer.y;
+                        const position = event.data.getLocalPosition(cardContainer.parent);
+                        offsetX = position.x - cardContainer.x;
+                        offsetY = position.y - cardContainer.y;
             
                         // Bring the dragged card to the top
-                        // app.stage.setChildIndex(cardContainer, app.stage.children.length - 1);
-                        // app.stage.setChildIndex(cardLabelContainer, app.stage.children.length - 1);
+                        app.stage.setChildIndex(cardContainer, app.stage.children.length - 1);
                     });
             
                     // Handle mouse move (dragging)
@@ -380,19 +369,11 @@
             getOpponents.value.forEach(async (opponent) => {
 
                 // Remove cards from the battlefield
-                for (const [key, sprite] of cardSprites.entries()) {
+                for (const [key, cardContainer] of cardContainers.entries()) {
                     if (key.startsWith(opponent.id + '-') && 
                         !opponent.zone.battlefield.some(card => opponent.id+'-'+card.id === key)) {
-                        sprite.destroy();  // Remove from PIXI
-                        cardSprites.delete(key);  // Remove from map
-                    }
-                }
-                // Remove labels from the battlefield
-                for (const [key, text] of cardLabels.entries()) {
-                    if (key.startsWith(opponent.id + '-') && 
-                        !opponent.zone.battlefield.some(card => opponent.id+'-'+card.id === key)) {
-                        text.destroy();  // Remove from PIXI
-                        cardLabels.delete(key);  // Remove from map
+                        cardContainer.destroy();  // Remove from PIXI
+                        cardContainers.delete(key);  // Remove from map
                     }
                 }
 
@@ -403,63 +384,68 @@
                         const faceUpTexture     = await Assets.load(card.imageUris.small);
                         const faceDownTexture   = await Assets.load('/back-small.jpeg');
                         const key               = opponent.id + '-' + card.id;
+                        let offsetX             = 0;
+                        let offsetY             = 0;
 
                         // Check if the card already exists
-                        if (cardSprites.has(opponent.id+'-'+card.id)) {
-                            const existingCardSprites = cardSprites.get(opponent.id+'-'+card.id);
-                            if(existingCardSprites) {
-                                existingCardSprites.anchor.set(0.5);
-                                existingCardSprites.x = canvasWidth - card.posX
-                                existingCardSprites.y = canvasHeight - card.posY
+                        if (cardContainers.has(key)) {
+                            const existingCardContainer = cardContainers.get(key);
+
+                            if(card && card.id === card.id && existingCardContainer) {
+                                existingCardContainer.x = canvasWidth - card.posX
+                                existingCardContainer.y = canvasHeight - card.posY
 
                                 if(card.isTapped)
-                                    existingCardSprites.rotation = -Math.PI / 2;
+                                    existingCardContainer.rotation = -Math.PI / 2;
                                 else
-                                    existingCardSprites.rotation = 0;
+                                    existingCardContainer.rotation = 0;
 
-                                existingCardSprites.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
-
-                                if (cardLabels.has(key)) {
-                                    const cardLabelContainer = cardLabels.get(key);
-                                    if(cardLabelContainer) {
-                                        updateCardLabel(card, cardLabelContainer, existingCardSprites)
+                                    const labelContainer    = existingCardContainer.children.find(child => (child.name === 'labelContainer')) as Sprite
+                                    const cardTexture       = existingCardContainer.children.find(child => (child.name === 'cardTexture')) as Sprite
+                                    if(labelContainer && cardTexture) {
+                                        cardTexture.texture = card.isFaceUp ? faceUpTexture : faceDownTexture;
+                                        updateCardLabel(card, labelContainer, cardTexture)
                                     }
-                                }
                             }
 
                             return;
                         }
 
+                        // Create container for a card
+                        const cardContainer = new Container()
+                        cardContainer.x  = card.posX = app.screen.width / 2;
+                        cardContainer.y = card.posY = app.screen.height / 2;
+
                         // If card does not exist, load and add it
                         const cardTexture = new Sprite(card.isFaceUp ? faceUpTexture : faceDownTexture);
-                        app.stage.addChild(cardTexture);
-                        cardSprites.set(opponent.id+'-'+card.id, cardTexture); // Track the sprite by card id
                 
                         cardTexture.anchor.set(0.5);
-                        cardTexture.x = card.posX = app.screen.width / 2;
-                        cardTexture.y = card.posY = app.screen.height / 2;
-                        
-
-                        // Enable interaction
-                        cardTexture.interactive = true;
-                        cardTexture.buttonMode = true;
-
-                        let offsetX = 0;
-                        let offsetY = 0;
+                        cardTexture.x       = 0;
+                        cardTexture.y       = 0;
+                        cardTexture.name    = 'cardTexture'
+                        cardContainer.addChild(cardTexture)
 
                         // Create a text label below the card
-                        const labelText = !card.isFaceUp ? `${card.powerCounter}/${card.toughnessCounter}` : `${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`
-                        const cardLabel = new Text(labelText, {
+                        const cardLabel = new Text(`${card.power + card.powerCounter}/${card.toughness + card.toughnessCounter}`, {
                             fontSize: 16,
                             fill: 0xffffff, // White text
                             align: "center",
                             fontWeight: "bold",
                         });
                         const cardLabelContainer: Container = getCardLabel(card, cardTexture, cardLabel)
-                        cardLabelContainer.x = cardTexture.x + cardTexture.width / 2 - 20;
-                        cardLabelContainer.y = cardTexture.y + cardTexture.height / 2 - 15;
-                        app.stage.addChild(cardLabelContainer);
-                        cardLabels.set(key, cardLabelContainer);
+                        cardLabelContainer.x = cardTexture.x + (cardTexture.width / 2) - (cardLabelContainer.width / 2);
+                        cardLabelContainer.y = cardTexture.y + (cardTexture.height) / 2 - (cardLabelContainer.height / 2);
+                        cardLabelContainer.name = 'labelContainer'
+                        cardContainer.addChild(cardLabelContainer)
+
+                        //  Add the card container to the game field
+                        app.stage.addChild(cardContainer)
+
+                        cardContainers.set(key, cardContainer)
+
+                        // Enable interaction
+                        cardTexture.interactive = true;
+                        cardTexture.buttonMode = true;
 
                         // Handle mouse down (begin dragging)
                         cardTexture.on('pointerdown', (event: InteractionEvent) => {
@@ -468,8 +454,7 @@
                             offsetY = position.y - cardTexture.y;
                 
                             // Bring the dragged card to the top
-                            app.stage.setChildIndex(cardTexture, app.stage.children.length - 1);
-                            app.stage.setChildIndex(cardLabelContainer, app.stage.children.length - 1);
+                            app.stage.setChildIndex(cardContainer, app.stage.children.length - 1);
                         });
 
                         // Handle mouse up (stop dragging)

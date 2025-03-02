@@ -11,10 +11,12 @@
                     </button>
                     <ul v-if="selectedPlayerTab && selectedPlayerTab.id === player.id">
                         <li>health: {{ player.health }} 
-                            <button @click="gameState.updateHealth(gameState.getYourInfo.health-1)">-</button>
-                            <button @click="gameState.updateHealth(gameState.getYourInfo.health+1)">+</button>
+                            <template v-if="gameState.getYourInfo.id === player.id">
+                                <input type="number" v-model="healthPoints" />
+                                <button @click="gameState.updateHealth(gameState.getYourInfo.health-healthPoints)">-</button>
+                                <button @click="gameState.updateHealth(gameState.getYourInfo.health+healthPoints)">+</button>
+                            </template>
                         </li>
-                        <li>Total Cards: {{ player.cards.length }}</li>
                         <li>Library: {{ player.zone.library.length }}</li>
                         <li>Battlefield: {{ player.zone.battlefield.length }}</li>
                         <li @click="showPlayerZone('playerGraveyard', player.zone.graveyard)">Graveyard: {{ player.zone.graveyard.length }}</li>
@@ -34,8 +36,15 @@
                         <li @click="selectedTab = 'graveyard'" class="tab-graveyard">Graveyard</li>
                         <li @click="selectedTab = 'exile'" class="tab-exile">Exile</li>
                         <!-- <li @click="selectedTab = 'stack'" class="tab-stack">stack</li> -->
-                        <li @click="selectedTab = 'minimized'">Minimized</li>
+                        <li @click="minimized">Minimized</li>
                     </ul>
+                    <div class="logs">
+                        <div :class="['logs-container', {minimized: selectedTab == 'minimized'}]" ref="logsContainer">
+                            <p v-for="(logs, index) in gameState.getLogs" :key="index">
+                                {{ logs }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <div class="zone-content">
                     <section v-show="selectedTab === 'library'" class="tab-library"><Library /></section>
@@ -130,8 +139,23 @@
     const selectedPlayerTab: Ref<null | Player> = ref(null)
     const modalState = useState<{isActive: boolean, type: string | null, data: any}>('modalState', () => ({isActive: false, type: null, data: null}))
     const fetchedDeck: Ref<{data: Card[] | null, isLoading: boolean}> = ref({data: null, isLoading: false})
+    const logsContainer: any = ref(null)
+    const healthPoints: Ref<number> = ref(gameState.getYourInfo.health)
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
+
+    const logsScrollReset = () => {
+        nextTick(() => {
+            if (logsContainer.value) {
+                logsContainer.value.scrollTop = logsContainer.value.scrollHeight;
+            }
+        });
+    };
+
+    const minimized = () => {
+        selectedTab.value = 'minimized'
+        logsScrollReset()
+    }
 
     const join = () => {
         if(fetchedDeck.value.data && fetchedDeck.value.data.length > 0) {
@@ -224,6 +248,10 @@
             }
         });
     });
+
+    watch(gameState.getLogs, (newValue) => {
+        logsScrollReset();
+    }, { deep: false, immediate: true });
     
 
 </script>
@@ -236,6 +264,7 @@
         right: 0;
         z-index: 1;
         .zone-tab {
+            display: flex;
             ul {
                 padding: 0;
                 display: flex;
@@ -252,6 +281,28 @@
                     font-weight: 700;
                     text-shadow: 0px 0px 19px black;
                 }    
+            }
+            .logs {
+                width: 100%;
+                position: relative;
+                .logs-container {
+                    background: #1a1a1a51;
+                    padding: 5px 20px;
+                    overflow: auto;
+                    text-align: right;
+                    position: absolute;
+                    width: 100%;
+                    box-sizing: border-box;
+                    bottom: calc(100% - 44px);
+                    max-height: 200px;
+                    min-height: 44px;
+                    &.minimized {
+                        max-height: 44px;
+                    }
+                    p {
+                        
+                    }
+                }
             }
         }
         .zone-content {

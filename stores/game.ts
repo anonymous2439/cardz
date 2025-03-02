@@ -12,6 +12,7 @@ export const useGameStore = defineStore('game', {
       players : [] as Player[],
       playerLastId : 0 as number,
       ws : null as WebSocket | null,
+      logs : [] as string[],
     }
   },
   getters: {
@@ -22,6 +23,7 @@ export const useGameStore = defineStore('game', {
       return state.players.filter(player => player.id !== state.you.id)
     },
     getPlayerLastId: (state) => state.playerLastId,
+    getLogs: (state) => state.logs,
   },
   actions: {
     join() {
@@ -31,19 +33,12 @@ export const useGameStore = defineStore('game', {
         cards: [],
         zone: {battlefield: [], graveyard: [], exile: [], library: [], hand: []},
         health: 20
-      }
+      } as any
 
       this.you = you
       this.addPlayer(you)
 
-      // if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
-      //   const message = {
-      //       players : this.$state.players,
-      //       playerLastId : this.$state.playerLastId,
-      //   }
-      //   this.$state.ws.send(JSON.stringify(message));
-      // }
-      this.broadcastChanges()
+      this.broadcastChanges(`${you.name} joined the game.`)
     },
     incrementConnected() {
       this.$state.connectedCount++;
@@ -134,7 +129,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} moved a card to the bottom of the library`)
     },
     drawCard() {
       if(this.you.zone.library.length > 0) {
@@ -147,7 +142,7 @@ export const useGameStore = defineStore('game', {
             return this.$state.you
           return player
         })
-        this.broadcastChanges()
+        this.broadcastChanges(`${this.$state.you.name} drawn a card`)
       }
     },
     drawCards(count=0) {
@@ -163,7 +158,7 @@ export const useGameStore = defineStore('game', {
             return this.$state.you
           return player
         })
-        this.broadcastChanges()
+        this.broadcastChanges(`${this.$state.you.name} drawn ${count} ${count > 1 ? 'cards' : 'card'}`)
       }
     },
     changeZone(card: GameCard, fromZone: string, toZone: string) {
@@ -193,7 +188,7 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
           player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} moved a card from ${fromZone} to ${toZone}`)
     },
     addToken(card: GameCard) {
       const timestamp = Date.now();
@@ -205,7 +200,7 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
           player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} added the ${newCard.name} token`)
     },
     destroyCard(card: GameCard, zone='battlefield') {
       this.$state.you.zone[zone] = this.$state.you.zone[zone].filter((item: GameCard) => (item.id !== card.id))
@@ -214,7 +209,7 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
         player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} destroyed the ${card.name}`)
     },
     giveToOpponent(card: GameCard, opponent: Player, fromZone: string, toZone: string) {
       // Find the card in the fromZone and remove it
@@ -242,20 +237,30 @@ export const useGameStore = defineStore('game', {
       this.broadcastChanges()
     },
     shuffle() {
-      this.$state.you.zone.library = [...this.$state.you.zone.library].sort(() => Math.random() - 0.5)
+      // Perform Fisher-Yates shuffle
+      const library = [...this.$state.you.zone.library];
+      for (let i = library.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [library[i], library[j]] = [library[j], library[i]]; // Swap elements
+      }
+      
+      // Update state with the shuffled library
+      this.$state.you.zone.library = library;
+  
       // Sync your info to the players list
       this.$state.players = this.$state.players.map(player => 
-        player.id === this.$state.you.id ? this.$state.you : player
+          player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
-    },
+  
+      this.broadcastChanges(`${this.$state.you.name} shuffled the library`);
+    },  
     updateHealth(health: number) {
       this.$state.you.health = health;
       // Sync your info to the players list
       this.$state.players = this.$state.players.map(player => 
         player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} updated health to ${health}`)
     },
     tapCard(card: GameCard) {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
@@ -272,7 +277,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} tapped/untapped ${card.name}`)
     },
     untapAllCards()  {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
@@ -284,7 +289,7 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
         player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} untapped all cards`)
     },
     revealCard(card: GameCard, zone='battlefield') {
       this.$state.you.zone[zone].map(z => {
@@ -304,7 +309,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} revealed the "${card.name}"`)
     },
     setFaceupLibrary(reveal = true) {
       this.$state.you.zone.library.map(card => {
@@ -317,7 +322,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges()
+      this.broadcastChanges(`${this.$state.you.name} set the library to faceup`)
     },
     revealTopLibrary() {
       for(let i = this.$state.you.zone.library.length - 1; i>=0; i--) {
@@ -332,7 +337,7 @@ export const useGameStore = defineStore('game', {
               return this.$state.you
             return player
           })
-          this.broadcastChanges()
+          this.broadcastChanges(`${this.$state.you.name} revealed the top card of the library`)
           break;
         }
       }
@@ -360,6 +365,11 @@ export const useGameStore = defineStore('game', {
                     this.setPlayer(eventData.data.player)
                     this.$state.playerLastId = eventData.data.playerLastId;
                   }
+
+                  // push new log
+                  if(eventData.data.hasOwnProperty('action') && eventData.data.action) {
+                    this.$state.logs.push(eventData.data.action)
+                  }
               }
               else if(eventData.type === 'updatePlayerCount') {
                   this.$state.connectedCount = eventData.data
@@ -375,11 +385,15 @@ export const useGameStore = defineStore('game', {
           
       };
     },
-    broadcastChanges() {
+    broadcastChanges(action: string|null) {
       if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
+          if(action)
+            this.$state.logs.push(action)
+
           const message = {
               player : this.$state.you,
               playerLastId : this.$state.playerLastId,
+              action : action
           }
           this.$state.ws.send(JSON.stringify(message));
       }
