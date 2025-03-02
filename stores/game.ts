@@ -255,17 +255,21 @@ export const useGameStore = defineStore('game', {
       this.broadcastChanges(`${this.$state.you.name} shuffled the library`);
     },  
     updateHealth(health: number) {
-      this.$state.you.health = health;
-      // Sync your info to the players list
-      this.$state.players = this.$state.players.map(player => 
-        player.id === this.$state.you.id ? this.$state.you : player
-      );
-      this.broadcastChanges(`${this.$state.you.name} updated health to ${health}`)
+      const prevHealth = this.$state.you.health
+      if(health > 0) {
+        this.$state.you.health = health;
+        // Sync your info to the players list
+        this.$state.players = this.$state.players.map(player => 
+          player.id === this.$state.you.id ? this.$state.you : player
+        );
+        this.broadcastChanges(`${this.$state.you.name} updated health from ${prevHealth} to ${health}`)
+      }
     },
     tapCard(card: GameCard) {
+      let action = false
       this.$state.you.zone.battlefield.map(battleFieldCard => {
         if(battleFieldCard.id === card.id) {
-          battleFieldCard.isTapped = !battleFieldCard.isTapped
+          battleFieldCard.isTapped = action = !battleFieldCard.isTapped
           return battleFieldCard
         }
         return battleFieldCard
@@ -277,7 +281,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges(`${this.$state.you.name} tapped/untapped ${card.isRevealed && card.isFaceUp ? card.name : 'a card'}`)
+      this.broadcastChanges(`${this.$state.you.name} ${action ? 'tapped' : 'untapped'} ${card.isRevealed && card.isFaceUp ? card.name : 'a card'}`)
     },
     untapAllCards()  {
       this.$state.you.zone.battlefield.map(battleFieldCard => {

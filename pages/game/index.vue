@@ -140,7 +140,7 @@
     const modalState = useState<{isActive: boolean, type: string | null, data: any}>('modalState', () => ({isActive: false, type: null, data: null}))
     const fetchedDeck: Ref<{data: Card[] | null, isLoading: boolean}> = ref({data: null, isLoading: false})
     const logsContainer: any = ref(null)
-    const healthPoints: Ref<number> = ref(gameState.getYourInfo.health)
+    const healthPoints: Ref<number> = ref(1)
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
 
