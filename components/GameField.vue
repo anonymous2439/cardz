@@ -10,6 +10,11 @@
                             <!-- all card related options -->
                             <ul>
                                 <li><button @click="gameState.untapAllCards()">Untap All</button></li>
+                                <li>
+                                    <button @click="multiSelectHandler(!multiSelect.isActive)">
+                                            Multiselect {{ multiSelect.isActive ? '('+multiSelect.selectedCards.length+')' : '' }}
+                                    </button>
+                                </li>
                             </ul>
 
                             <label>Card Options</label>
@@ -17,20 +22,22 @@
                             <!-- If selected card is token -->
                             <template v-if="selectedCard.hasOwnProperty('referenceCard')">
                                 <ul>
-                                    <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
-                                    <li><button @click="gameState.destroyCard(selectedCard)">Destroy</button></li>
+                                    <li><button @click="tapCard()">Tap / Untap</button></li>
+                                    <li><button @click="destroyCard()">Destroy</button></li>
                                 </ul>
                             </template>
                             
                             <template v-else>
                                 <ul>
-                                    <li><button @click="gameState.tapCard(selectedCard)">Tap / Untap</button></li>
+                                    <li><button @click="tapCard()">Tap / Untap</button></li>
                                     <li v-if="!selectedCard.isFaceUp"><button @click="gameState.revealCard(selectedCard)">Face up / Reveal</button></li>
-                                    <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'graveyard')">To Graveyard</button></li>
-                                    <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'exile')">To Exile</button></li>
-                                    <li><button @click="gameState.changeZone(selectedCard, 'battlefield', 'hand')">To Hand</button></li>
-                                    <li><button @click="addToken">Add Token</button></li>
-                                    <li><button @click="showAttributes">Attributes</button></li>
+                                    <li><button @click="changeZone('battlefield', 'graveyard')">To Graveyard</button></li>
+                                    <li><button @click="changeZone('battlefield', 'exile')">To Exile</button></li>
+                                    <li><button @click="changeZone('battlefield', 'hand')">To Hand</button></li>
+                                    <template v-if="!multiSelect.isActive">
+                                        <li><button @click="addToken">Add Token</button></li>
+                                        <li><button @click="showAttributes">Attributes</button></li>
+                                    </template>
                                 </ul>
                             </template>
 
@@ -100,15 +107,14 @@
     
     const gameState = useGameStore();
     const selectedCard = useState<GameCard | null>('selectedCard', () => null)
-    const selectedCards = useState<GameCard[]>('selectedCards', () => [])
+    // const selectedCards = useState<GameCard[]>('selectedCards', () => [])
     const getYourInfo = computed<Player>(() => gameState.getYourInfo);
     const getOpponents = computed(() => gameState.getOpponents);
     const modalState: Ref<{isActive: boolean, type: string | null, data: any | null}> = ref({isActive: false, type: null, data: null})
+    const multiSelect: Ref<{isActive: boolean, selectedCards: Array<GameCard>}> = ref({isActive:false, selectedCards:[]})
     
     // Track the currently loaded images and their positions
     const pixiContainer = ref<any>(null);
-    const cardSprites = new Map<string, Sprite>();  // A map to track the card sprites by ID
-    const cardLabels = new Map<string, Container>(); // Track labels for updating
     const cardContainers = new Map<string, Container>();
 
     const showAttributes = () => {
@@ -186,6 +192,95 @@
                     modalState.value.data.push(token)
                 }
             })
+        }
+    }
+
+    const multiSelectHandler = (isActive=true) => {
+        multiSelect.value.isActive = isActive
+        
+        if (!multiSelect.value.isActive) {
+            if (multiSelect.value.selectedCards.length) {
+                for (const [key, cardContainer] of cardContainers.entries()) {
+                    const foundBorder = Array.from(cardContainer.children).find(child => child.name === 'border');
+                    
+                    if (foundBorder) {
+                        foundBorder.destroy?.();
+                        cardContainer.removeChild(foundBorder);
+                    }
+                }
+            }
+            
+            multiSelect.value.selectedCards = []; 
+        }
+    };
+
+
+    const tapCard = () => {
+        if(multiSelect.value.isActive && multiSelect.value.selectedCards.length) {
+            multiSelect.value.selectedCards.forEach(card => {
+                gameState.tapCard(card)
+            })
+            multiSelectHandler(false)
+        }
+        else if(selectedCard.value) {
+            gameState.tapCard(selectedCard.value)
+        }
+    }
+
+    const changeZone = (fromZone:string, toZone:string) => {
+        if(multiSelect.value.isActive && multiSelect.value.selectedCards.length) {
+            multiSelect.value.selectedCards.forEach(card => {
+                gameState.changeZone(card, fromZone, toZone)
+            })
+            multiSelectHandler(false)
+        }
+        else if(selectedCard.value) {
+            gameState.changeZone(selectedCard.value, fromZone, toZone)
+        }
+    }
+
+    const destroyCard = () => {
+        if(multiSelect.value.isActive && multiSelect.value.selectedCards.length) {
+            multiSelect.value.selectedCards.forEach(card => {
+                gameState.destroyCard(card)
+            })
+            multiSelectHandler(false)
+        }
+        else if(selectedCard.value) {
+            gameState.destroyCard(selectedCard.value)
+        }
+    }
+
+    const setMultiSelect = (card: GameCard, cardContainer: Container) => {
+        if (multiSelect.value.isActive) {
+            const index = multiSelect.value.selectedCards.findIndex(item => item.id === card.id);
+            const cardTexture = cardContainer.children.find(child => (child.name === 'cardTexture')) as Sprite
+
+            if (index === -1) {
+                multiSelect.value.selectedCards.push(card);
+
+                // Add red border to the card container
+                const border = new Graphics();
+                border.clear();
+                border.lineStyle(4, 0xff0000, 1); // Border width, color, and alpha
+                border.beginFill(0x000000, 0);
+                border.drawRect(0, 0, cardTexture.width, cardTexture.height);
+                border.endFill();
+                border.x = -(cardTexture.width / 2)
+                border.y = -(cardTexture.height / 2)
+                border.name = 'border'
+                cardContainer.addChild(border)
+            } else {
+                multiSelect.value.selectedCards.splice(index, 1);
+
+                const foundBorder = cardContainer.children.find(child => child.name === 'border');
+
+                if (foundBorder) {
+                    foundBorder.destroy();
+                    cardContainer.removeChild(foundBorder)
+                }
+
+            }
         }
     }
     
@@ -287,10 +382,15 @@
             
                     // Handle mouse down (begin dragging)
                     cardContainer.on('pointerdown', (event: InteractionEvent) => {
-                        isDragging = true;
+                        if(!multiSelect.value.isActive)
+                            isDragging = true;
+
                         const position = event.data.getLocalPosition(cardContainer.parent);
                         offsetX = position.x - cardContainer.x;
                         offsetY = position.y - cardContainer.y;
+
+                        // For multiselect
+                        setMultiSelect(card, cardContainer)
             
                         // Bring the dragged card to the top
                         app.stage.setChildIndex(cardContainer, app.stage.children.length - 1);
@@ -313,10 +413,6 @@
 
                             cardContainer.x = Math.max(minX, Math.min(newX, maxX));
                             cardContainer.y = Math.max(minY, Math.min(newY, maxY));
-
-                            // cardLabel.anchor.set(0.5);
-                            // cardLabelContainer.x = cardContainer.x + cardContainer.width / 2 - 20;
-                            // cardLabelContainer.y = cardContainer.y + cardContainer.height / 2 - 15;
 
                             // Update game state
                             getYourInfo.value.zone.battlefield = getYourInfo.value.zone.battlefield.map(item => {
@@ -463,11 +559,12 @@
                             getOpponents.value.forEach(opponent => {
                                 opponent.zone.battlefield.map(opponentCard => {
                                     if(opponentCard.id === card.id) {
-                                        if(opponentCard.isRevealed)
+                                        if(opponentCard.isRevealed) {
                                             selectedCard.value = card as GameCard | null
-                                            else {
-                                        selectedCard.value = null
-                                    }
+                                        }
+                                        else {
+                                            selectedCard.value = null
+                                        }
                                     }
                                     
                                 })

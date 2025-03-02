@@ -188,7 +188,7 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(player => 
           player.id === this.$state.you.id ? this.$state.you : player
       );
-      this.broadcastChanges(`${this.$state.you.name} moved a card from ${fromZone} to ${toZone}`)
+      this.broadcastChanges(`${this.$state.you.name} moved ${card.isRevealed && card.isFaceUp && card.name ? card.name : 'a card'} from ${fromZone} to ${toZone}`)
     },
     addToken(card: GameCard) {
       const timestamp = Date.now();
@@ -277,7 +277,7 @@ export const useGameStore = defineStore('game', {
           return this.$state.you
         return player
       })
-      this.broadcastChanges(`${this.$state.you.name} tapped/untapped ${card.name}`)
+      this.broadcastChanges(`${this.$state.you.name} tapped/untapped ${card.isRevealed && card.isFaceUp ? card.name : 'a card'}`)
     },
     untapAllCards()  {
       this.$state.you.zone.battlefield.map(battleFieldCard => {
