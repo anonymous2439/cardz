@@ -40,6 +40,15 @@ export const useGameStore = defineStore('game', {
 
       this.broadcastChanges(`${you.name} joined the game.`)
     },
+    newGame() {
+      Object.keys(this.$state.you.zone).forEach(key => {
+        this.$state.you.zone[key] = []
+      })
+      this.$state.you.health = 20
+      this.cardsToLibrary()
+      this.broadcastChanges(`${this.you.name} created a new game`)
+      this.shuffle()
+    },
     incrementConnected() {
       this.$state.connectedCount++;
     },
@@ -389,7 +398,12 @@ export const useGameStore = defineStore('game', {
           
       };
     },
-    broadcastChanges(action: string|null) {
+    stopWebSocketServer() {
+      if (this.$state.ws) {
+        this.$state.ws.close();
+      }
+    },
+    broadcastChanges(action:string|null=null) {
       if (this.$state.ws && this.$state.ws.readyState === WebSocket.OPEN) {
           if(action)
             this.$state.logs.push(action)

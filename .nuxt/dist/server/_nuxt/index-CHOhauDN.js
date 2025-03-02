@@ -263,16 +263,20 @@ const useGameStore = defineStore("game", {
       this.broadcastChanges(`${this.$state.you.name} shuffled the library`);
     },
     updateHealth(health) {
-      this.$state.you.health = health;
-      this.$state.players = this.$state.players.map(
-        (player) => player.id === this.$state.you.id ? this.$state.you : player
-      );
-      this.broadcastChanges(`${this.$state.you.name} updated health to ${health}`);
+      const prevHealth = this.$state.you.health;
+      if (health > 0) {
+        this.$state.you.health = health;
+        this.$state.players = this.$state.players.map(
+          (player) => player.id === this.$state.you.id ? this.$state.you : player
+        );
+        this.broadcastChanges(`${this.$state.you.name} updated health from ${prevHealth} to ${health}`);
+      }
     },
     tapCard(card) {
+      let action = false;
       this.$state.you.zone.battlefield.map((battleFieldCard) => {
         if (battleFieldCard.id === card.id) {
-          battleFieldCard.isTapped = !battleFieldCard.isTapped;
+          battleFieldCard.isTapped = action = !battleFieldCard.isTapped;
           return battleFieldCard;
         }
         return battleFieldCard;
@@ -282,7 +286,7 @@ const useGameStore = defineStore("game", {
           return this.$state.you;
         return player;
       });
-      this.broadcastChanges(`${this.$state.you.name} tapped/untapped ${card.isRevealed && card.isFaceUp ? card.name : "a card"}`);
+      this.broadcastChanges(`${this.$state.you.name} ${action ? "tapped" : "untapped"} ${card.isRevealed && card.isFaceUp ? card.name : "a card"}`);
     },
     untapAllCards() {
       this.$state.you.zone.battlefield.map((battleFieldCard) => {
@@ -1027,7 +1031,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const modalState = useState("modalState", () => ({ isActive: false, type: null, data: null }));
     const fetchedDeck = ref({ data: null, isLoading: false });
     const logsContainer = ref(null);
-    const healthPoints = ref(gameState.getYourInfo.health);
+    const healthPoints = ref(1);
     const getConnectedCount = computed(() => gameState.getConnectedCount);
     const logsScrollReset = () => {
       nextTick(() => {
@@ -1056,19 +1060,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       const _component_Hand = __nuxt_component_2;
       const _component_Graveyard = __nuxt_component_3;
       const _component_Exile = __nuxt_component_4;
-      _push(`<div${ssrRenderAttrs(mergeProps({ id: "game-page" }, _attrs))} data-v-9f9acdb9>`);
+      _push(`<div${ssrRenderAttrs(mergeProps({ id: "game-page" }, _attrs))} data-v-1ff6f3ba>`);
       if (Object.keys(unref(gameState).getYourInfo).length > 0 && unref(getConnectedCount) === unref(gameState).getPlayers.length) {
-        _push(`<!--[--><div id="players-stats" data-v-9f9acdb9><!--[-->`);
+        _push(`<!--[--><div id="players-stats" data-v-1ff6f3ba><!--[-->`);
         ssrRenderList(unref(gameState).players, (player, index2) => {
-          _push(`<div class="player-stats-con" data-v-9f9acdb9><button data-v-9f9acdb9>${ssrInterpolate(unref(gameState).getYourInfo.id === player.id ? "(You) " : "")} ${ssrInterpolate(player.name)} | h: ${ssrInterpolate(player.health)}</button>`);
+          _push(`<div class="player-stats-con" data-v-1ff6f3ba><button data-v-1ff6f3ba>${ssrInterpolate(unref(gameState).getYourInfo.id === player.id ? "(You) " : "")} ${ssrInterpolate(player.name)} | h: ${ssrInterpolate(player.health)}</button>`);
           if (unref(selectedPlayerTab) && unref(selectedPlayerTab).id === player.id) {
-            _push(`<ul data-v-9f9acdb9><li data-v-9f9acdb9>health: ${ssrInterpolate(player.health)} `);
+            _push(`<ul data-v-1ff6f3ba><li data-v-1ff6f3ba>health: ${ssrInterpolate(player.health)} `);
             if (unref(gameState).getYourInfo.id === player.id) {
-              _push(`<!--[--><input type="number"${ssrRenderAttr("value", unref(healthPoints))} data-v-9f9acdb9><button data-v-9f9acdb9>-</button><button data-v-9f9acdb9>+</button><!--]-->`);
+              _push(`<!--[--><input type="number"${ssrRenderAttr("value", unref(healthPoints))} data-v-1ff6f3ba><button data-v-1ff6f3ba>-</button><button data-v-1ff6f3ba>+</button><!--]-->`);
             } else {
               _push(`<!---->`);
             }
-            _push(`</li><li data-v-9f9acdb9>Library: ${ssrInterpolate(player.zone.library.length)}</li><li data-v-9f9acdb9>Battlefield: ${ssrInterpolate(player.zone.battlefield.length)}</li><li data-v-9f9acdb9>Graveyard: ${ssrInterpolate(player.zone.graveyard.length)}</li><li data-v-9f9acdb9>Exile: ${ssrInterpolate(player.zone.exile.length)}</li><li data-v-9f9acdb9>Hand: ${ssrInterpolate(player.zone.hand.length)}</li></ul>`);
+            _push(`</li><li data-v-1ff6f3ba>Library: ${ssrInterpolate(player.zone.library.length)}</li><li data-v-1ff6f3ba>Battlefield: ${ssrInterpolate(player.zone.battlefield.length)}</li><li data-v-1ff6f3ba>Graveyard: ${ssrInterpolate(player.zone.graveyard.length)}</li><li data-v-1ff6f3ba>Exile: ${ssrInterpolate(player.zone.exile.length)}</li><li data-v-1ff6f3ba>Hand: ${ssrInterpolate(player.zone.hand.length)}</li></ul>`);
           } else {
             _push(`<!---->`);
           }
@@ -1081,17 +1085,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           _push(`<!---->`);
         }
         if (Object.keys(unref(gameState).you).length > 0) {
-          _push(`<div id="zones" data-v-9f9acdb9><div class="zone-tab" data-v-9f9acdb9><ul data-v-9f9acdb9><li class="tab-library" data-v-9f9acdb9>Library</li><li class="tab-hand" data-v-9f9acdb9>Hand</li><li class="tab-graveyard" data-v-9f9acdb9>Graveyard</li><li class="tab-exile" data-v-9f9acdb9>Exile</li><li data-v-9f9acdb9>Minimized</li></ul><div class="logs" data-v-9f9acdb9><div class="${ssrRenderClass(["logs-container", { minimized: unref(selectedTab) == "minimized" }])}" data-v-9f9acdb9><!--[-->`);
+          _push(`<div id="zones" data-v-1ff6f3ba><div class="zone-tab" data-v-1ff6f3ba><ul data-v-1ff6f3ba><li class="tab-library" data-v-1ff6f3ba>Library</li><li class="tab-hand" data-v-1ff6f3ba>Hand</li><li class="tab-graveyard" data-v-1ff6f3ba>Graveyard</li><li class="tab-exile" data-v-1ff6f3ba>Exile</li><li data-v-1ff6f3ba>Minimized</li></ul><div class="logs" data-v-1ff6f3ba><div class="${ssrRenderClass(["logs-container", { minimized: unref(selectedTab) == "minimized" }])}" data-v-1ff6f3ba><!--[-->`);
           ssrRenderList(unref(gameState).getLogs, (logs, index2) => {
-            _push(`<p data-v-9f9acdb9>${ssrInterpolate(logs)}</p>`);
+            _push(`<p data-v-1ff6f3ba>${ssrInterpolate(logs)}</p>`);
           });
-          _push(`<!--]--></div></div></div><div class="zone-content" data-v-9f9acdb9><section style="${ssrRenderStyle(unref(selectedTab) === "library" ? null : { display: "none" })}" class="tab-library" data-v-9f9acdb9>`);
+          _push(`<!--]--></div></div></div><div class="zone-content" data-v-1ff6f3ba><section style="${ssrRenderStyle(unref(selectedTab) === "library" ? null : { display: "none" })}" class="tab-library" data-v-1ff6f3ba>`);
           _push(ssrRenderComponent(_component_Library, null, null, _parent));
-          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "hand" ? null : { display: "none" })}" class="tab-hand" data-v-9f9acdb9>`);
+          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "hand" ? null : { display: "none" })}" class="tab-hand" data-v-1ff6f3ba>`);
           _push(ssrRenderComponent(_component_Hand, null, null, _parent));
-          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "graveyard" ? null : { display: "none" })}" class="tab-graveyard" data-v-9f9acdb9>`);
+          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "graveyard" ? null : { display: "none" })}" class="tab-graveyard" data-v-1ff6f3ba>`);
           _push(ssrRenderComponent(_component_Graveyard, null, null, _parent));
-          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "exile" ? null : { display: "none" })}" class="tab-exile" data-v-9f9acdb9>`);
+          _push(`</section><section style="${ssrRenderStyle(unref(selectedTab) === "exile" ? null : { display: "none" })}" class="tab-exile" data-v-1ff6f3ba>`);
           _push(ssrRenderComponent(_component_Exile, null, null, _parent));
           _push(`</section></div></div>`);
         } else {
@@ -1128,7 +1132,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           footer: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<button class="btn bg-primary muted" data-v-9f9acdb9${_scopeId}> Close </button>`);
+              _push2(`<button class="btn bg-primary muted" data-v-1ff6f3ba${_scopeId}> Close </button>`);
             } else {
               return [
                 createVNode("button", {
@@ -1140,11 +1144,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<ul class="zone-card-list" data-v-9f9acdb9${_scopeId}><!--[-->`);
+              _push2(`<ul class="zone-card-list" data-v-1ff6f3ba${_scopeId}><!--[-->`);
               ssrRenderList(unref(modalState).data, (card, index2) => {
                 _push2(`<!--[-->`);
                 if (card.isRevealed) {
-                  _push2(`<li data-v-9f9acdb9${_scopeId}><img${ssrRenderAttr("src", card.imageUris.small)} data-v-9f9acdb9${_scopeId}></li>`);
+                  _push2(`<li data-v-1ff6f3ba${_scopeId}><img${ssrRenderAttr("src", card.imageUris.small)} data-v-1ff6f3ba${_scopeId}></li>`);
                 } else {
                   _push2(`<!---->`);
                 }
@@ -1183,9 +1187,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           footer: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
               if (Object.keys(unref(gameState).you).length === 0) {
-                _push2(`<button class="${ssrRenderClass(["btn", "bg-primary", { "disabled": !unref(fetchedDeck).data }])}" data-v-9f9acdb9${_scopeId}> Join </button>`);
+                _push2(`<button class="${ssrRenderClass(["btn", "bg-primary", { "disabled": !unref(fetchedDeck).data }])}" data-v-1ff6f3ba${_scopeId}> Join </button>`);
               } else {
-                _push2(`<p data-v-9f9acdb9${_scopeId}>Waiting for other players to join...</p>`);
+                _push2(`<p data-v-1ff6f3ba${_scopeId}>Waiting for other players to join...</p>`);
               }
             } else {
               return [
@@ -1199,16 +1203,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<h4 data-v-9f9acdb9${_scopeId}>Connected: ${ssrInterpolate(unref(getConnectedCount))}</h4> Upload Deck: <input type="file" id="fileInput" accept=".txt" data-v-9f9acdb9${_scopeId}>`);
+              _push2(`<h4 data-v-1ff6f3ba${_scopeId}>Connected: ${ssrInterpolate(unref(getConnectedCount))}</h4> Upload Deck: <input type="file" id="fileInput" accept=".txt" data-v-1ff6f3ba${_scopeId}>`);
               if (unref(fetchedDeck).isLoading) {
-                _push2(`<p data-v-9f9acdb9${_scopeId}>Uploading Deck...</p>`);
+                _push2(`<p data-v-1ff6f3ba${_scopeId}>Uploading Deck...</p>`);
               } else {
                 _push2(`<!---->`);
               }
               if (unref(fetchedDeck).data && unref(fetchedDeck).data.length > 0 && !unref(fetchedDeck).isLoading) {
-                _push2(`<ol data-v-9f9acdb9${_scopeId}><!--[-->`);
+                _push2(`<ol data-v-1ff6f3ba${_scopeId}><!--[-->`);
                 ssrRenderList(unref(fetchedDeck).data, (card, index2) => {
-                  _push2(`<li data-v-9f9acdb9${_scopeId}>`);
+                  _push2(`<li data-v-1ff6f3ba${_scopeId}>`);
                   if (card) {
                     _push2(`<!--[-->${ssrInterpolate(card.name)} - ${ssrInterpolate(card.quantity)}<!--]-->`);
                   } else {
@@ -1260,7 +1264,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           footer: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<button class="btn bg-primary" data-v-9f9acdb9${_scopeId}>Close</button>`);
+              _push2(`<button class="btn bg-primary" data-v-1ff6f3ba${_scopeId}>Close</button>`);
             } else {
               return [
                 createVNode("button", {
@@ -1272,7 +1276,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<h4 data-v-9f9acdb9${_scopeId}>Casting &quot;${ssrInterpolate(unref(modalState).data.name)}&quot;</h4><ul data-v-9f9acdb9${_scopeId}><li data-v-9f9acdb9${_scopeId}>Black: 0</li><li data-v-9f9acdb9${_scopeId}>Green: 0</li><li data-v-9f9acdb9${_scopeId}>Red: 0</li><li data-v-9f9acdb9${_scopeId}>Blue: 0</li><li data-v-9f9acdb9${_scopeId}>White: 0</li></ul><h4 data-v-9f9acdb9${_scopeId}>Total: 0</h4>`);
+              _push2(`<h4 data-v-1ff6f3ba${_scopeId}>Casting &quot;${ssrInterpolate(unref(modalState).data.name)}&quot;</h4><ul data-v-1ff6f3ba${_scopeId}><li data-v-1ff6f3ba${_scopeId}>Black: 0</li><li data-v-1ff6f3ba${_scopeId}>Green: 0</li><li data-v-1ff6f3ba${_scopeId}>Red: 0</li><li data-v-1ff6f3ba${_scopeId}>Blue: 0</li><li data-v-1ff6f3ba${_scopeId}>White: 0</li></ul><h4 data-v-1ff6f3ba${_scopeId}>Total: 0</h4>`);
             } else {
               return [
                 createVNode("h4", null, 'Casting "' + toDisplayString(unref(modalState).data.name) + '"', 1),
@@ -1302,8 +1306,8 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/game/index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9f9acdb9"]]);
+const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-1ff6f3ba"]]);
 export {
   index as default
 };
-//# sourceMappingURL=index-FZtQs_oE.js.map
+//# sourceMappingURL=index-CHOhauDN.js.map

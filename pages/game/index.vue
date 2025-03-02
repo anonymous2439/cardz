@@ -22,6 +22,7 @@
                         <li @click="showPlayerZone('playerGraveyard', player.zone.graveyard)">Graveyard: {{ player.zone.graveyard.length }}</li>
                         <li @click="showPlayerZone('playerExile', player.zone.exile)">Exile: {{ player.zone.exile.length }}</li>
                         <li @click="showPlayerZone('playerHand', player.zone.hand)">Hand: {{ player.zone.hand.length }}</li>
+                        <li @click="showSettings">Settings</li>
                     </ul>
                 </div>
             </div>
@@ -96,6 +97,11 @@
             </ol>
 
             <template #footer>
+                <!-- <button 
+                    :class="['btn', 'bg-primary']"
+                    @click="reconnect">
+                        Reconnect
+                </button> -->
                 <button 
                     v-if="Object.keys(gameState.you).length === 0"
                     :class="['btn', 'bg-primary', {'disabled' : !fetchedDeck.data}]"
@@ -124,6 +130,16 @@
                 <!-- <button @click="gameState.changeZone(card, 'hand', 'graveyard')" class="btn bg-primary">Accept</button> -->
             </template>
         </ModalsGlobal>
+
+        <ModalsGlobal v-if="modalState.isActive && modalState.type == 'settings'">
+            <template #header>
+                Settings
+            </template>
+                <button @click="newGame">New Game</button>
+            <template #footer>
+                <button @click="modalState.isActive = false" class="btn bg-primary">Close</button>
+            </template>
+        </ModalsGlobal>
     </div>
 </template>
 
@@ -143,6 +159,20 @@
     const healthPoints: Ref<number> = ref(1)
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
+
+    const reconnect = () => {
+        gameState.stopWebSocketServer()
+    }
+
+    const showSettings = () => {
+        modalState.value.isActive   = true
+        modalState.value.type       = 'settings'
+    }
+
+    const newGame = () => {
+        gameState.newGame()
+        modalState.value.isActive   = false
+    }
 
     const logsScrollReset = () => {
         nextTick(() => {
@@ -247,6 +277,10 @@
                 fetchCardsFromFile(file);
             }
         });
+    });
+
+    onUnmounted(() => {
+        gameState.stopWebSocketServer()
     });
 
     watch(gameState.getLogs, (newValue) => {
