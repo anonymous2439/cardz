@@ -360,7 +360,7 @@ export const useGameStore = defineStore('game', {
     /**
      * Websocket initialization
      */
-    startWebSocketServer() {
+    startWebSocketServer(roomId:number) {
       const config: any = useRuntimeConfig();
       this.$state.ws = new WebSocket(config.public.wsEndpoint);
 
@@ -391,12 +391,24 @@ export const useGameStore = defineStore('game', {
       };
 
       this.$state.ws.onopen = () => {
-          
+        const message = {
+          type : 'join_room',
+          roomId : roomId,
+        }
+        this.$state.ws.send(JSON.stringify(message));
       };
 
       this.$state.ws.onclose = () => {
           
       };
+    },
+    joinRoom(roomId:number) {
+      const message = {
+        type : 'join_room',
+        roomId : roomId,
+      }
+      if(this.$state.ws)
+        this.$state.ws.send(JSON.stringify(message));
     },
     stopWebSocketServer() {
       if (this.$state.ws) {
@@ -411,7 +423,8 @@ export const useGameStore = defineStore('game', {
           const message = {
               player : this.$state.you,
               playerLastId : this.$state.playerLastId,
-              action : action
+              action : action,
+              type : 'updatePlayers'
           }
           this.$state.ws.send(JSON.stringify(message));
       }

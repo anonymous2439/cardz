@@ -81,6 +81,28 @@
             </template>
         </ModalsGlobal>
 
+        <ModalsGlobal v-else-if="modalState.isActive && modalState.type === 'room'">
+            <template #header>
+                Enter Room ID
+            </template>
+            
+            <input type="number" v-model="roomId" />
+
+            <template #footer>
+                <button 
+                    class="btn bg-primary muted"
+                    @click="modalState.isActive = false">
+                        Close
+                </button>
+                <button 
+                    v-if="Object.keys(gameState.you).length === 0"
+                    :class="['btn', 'bg-primary', {'disabled' : roomId < 1}]"
+                    @click="modalState.type='joinGame'">
+                        Join Room
+                </button>
+            </template>
+        </ModalsGlobal>
+
         <ModalsGlobal v-else-if="Object.keys(gameState.you).length === 0 || (getConnectedCount != gameState.getPlayers.length)" class="join-modal">
             <template #header>
                 Join Game
@@ -136,6 +158,7 @@
                 Settings
             </template>
                 <button @click="newGame">New Game</button>
+                <button @click="quit">Quit</button>
             <template #footer>
                 <button @click="modalState.isActive = false" class="btn bg-primary">Close</button>
             </template>
@@ -157,10 +180,11 @@
     const fetchedDeck: Ref<{data: Card[] | null, isLoading: boolean}> = ref({data: null, isLoading: false})
     const logsContainer: any = ref(null)
     const healthPoints: Ref<number> = ref(1)
+    const roomId: Ref<number> = ref(1)
 
     const getConnectedCount = computed(() => gameState.getConnectedCount);
 
-    const reconnect = () => {
+    const quit = () => {
         gameState.stopWebSocketServer()
     }
 
@@ -234,7 +258,6 @@
         const data: any = await response.json();
         const cards: Card[] = []
         if(data && data.data) {
-            console.log("card data:",data.data)
             cardIdentifiers.forEach((cardIdentifier: any) => {
                 data.data.forEach((d: { 
                         name: any,
@@ -268,7 +291,7 @@
     }
 
     onMounted(() => {
-        gameState.startWebSocketServer()
+        gameState.startWebSocketServer(1)
 
         document.getElementById("fileInput")?.addEventListener("change", (event) => {
             const file = (event.target as HTMLInputElement).files?.[0];
