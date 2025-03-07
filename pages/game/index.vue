@@ -89,21 +89,22 @@
             <input type="number" v-model="roomId" />
 
             <template #footer>
-                <button 
+                <!-- <button 
                     class="btn bg-primary muted"
                     @click="modalState.isActive = false">
                         Close
-                </button>
+                </button> -->
                 <button 
                     v-if="Object.keys(gameState.you).length === 0"
                     :class="['btn', 'bg-primary', {'disabled' : roomId < 1}]"
-                    @click="modalState.type='joinGame'">
+                    @click="joinRoom">
                         Join Room
                 </button>
             </template>
         </ModalsGlobal>
 
-        <ModalsGlobal v-else-if="Object.keys(gameState.you).length === 0 || (getConnectedCount != gameState.getPlayers.length)" class="join-modal">
+        <ModalsGlobal v-show="modalState.isActive && modalState.type === 'joinGame' 
+            &&  (Object.keys(gameState.getYourInfo).length === 0 || (getConnectedCount !== gameState.getPlayers.length))" class="join-modal">
             <template #header>
                 Join Game
             </template>
@@ -119,16 +120,16 @@
             </ol>
 
             <template #footer>
-                <!-- <button 
-                    :class="['btn', 'bg-primary']"
-                    @click="reconnect">
-                        Reconnect
-                </button> -->
                 <button 
-                    v-if="Object.keys(gameState.you).length === 0"
+                    :class="['btn', 'bg-secondary']"
+                    @click="backToRoom">
+                        Back
+                </button>
+                <button 
+                    v-if="(Object.keys(gameState.getYourInfo).length === 0)"
                     :class="['btn', 'bg-primary', {'disabled' : !fetchedDeck.data}]"
                     @click="join()">
-                        Join
+                        Ready
                 </button>
                 <p v-else>Waiting for other players to join...</p>
             </template>
@@ -158,7 +159,7 @@
                 Settings
             </template>
                 <button @click="newGame">New Game</button>
-                <button @click="quit">Quit</button>
+                <!-- <button @click="quit">Quit</button> -->
             <template #footer>
                 <button @click="modalState.isActive = false" class="btn bg-primary">Close</button>
             </template>
@@ -211,6 +212,11 @@
         logsScrollReset()
     }
 
+    const joinRoom = () => {
+        gameState.startWebSocketServer(roomId.value)
+        modalState.value.type = 'joinGame'
+    }
+
     const join = () => {
         if(fetchedDeck.value.data && fetchedDeck.value.data.length > 0) {
             gameState.join()
@@ -219,8 +225,12 @@
             gameState.cardsToLibrary()
             gameState.shuffle()
             gameState.updatePlayer(you)
-            modalState.value.isActive = false; 
         }
+    }
+
+    const backToRoom = () => {
+        gameState.stopWebSocketServer();
+        modalState.value.type='room'
     }
 
     const showPlayerZone = (zoneType: string, zone: GameCard[]) => {
@@ -291,11 +301,14 @@
     }
 
     onMounted(() => {
-        gameState.startWebSocketServer(1)
+        modalState.value.isActive = true
+        modalState.value.type = 'room'
 
         document.getElementById("fileInput")?.addEventListener("change", (event) => {
+            console.log("file input change")
             const file = (event.target as HTMLInputElement).files?.[0];
             if (file) {
+                console.log("file:",file)
                 fetchedDeck.value.isLoading = true
                 fetchCardsFromFile(file);
             }
