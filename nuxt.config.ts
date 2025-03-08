@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       wsEndpoint: process.env.WS_ENDPOINT || "ws://localhost:8081",
+      apiEndpoint: process.env.API_ENDPOINT || "https://cardz.bounceme.net:8082",
     },
   },
   vite: {

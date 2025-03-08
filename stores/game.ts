@@ -14,6 +14,7 @@ export const useGameStore = defineStore('game', {
       playerLastId : 0 as number,
       ws : null as WebSocket | null,
       logs : [] as string[],
+      userInfo : {},
     }
   },
   getters: {
@@ -28,22 +29,29 @@ export const useGameStore = defineStore('game', {
   },
   actions: {
     login(loginForm: LoginForm) {
-      console.log('form:',loginForm)
-    },
-    async signup(signupForm: SignupForm) {
-      console.log('form:',signupForm)
-      const { data, error } = await useFetch("http://localhost:8082/signup", {
+      const config: any = useRuntimeConfig();
+      return useFetch(`${config.public.apiEndpoint}login`, {
+          method: "POST",
+          body: loginForm
+      }).then(({ data, error }) => {
+          if (data?.value) 
+            return data.value;
+      });
+    },  
+    signup(signupForm: SignupForm) {
+      const config: any = useRuntimeConfig();
+      return useFetch(`${config.public.apiEndpoint}signup`, {
         method: "POST",
         body: signupForm
+      }).then(({ data, error }) => {
+        if (data?.value) 
+          return data.value;
       });
-
-      if(data && data.success)
-        return data.message
     },
     join() {
       const you = {
         id: 'player'+(this.playerLastId+1),
-        name: 'Player '+(this.playerLastId+1),
+        name: this.$state.userInfo.hasOwnProperty('username') ? this.$state.userInfo.username : 'Player '+(this.playerLastId+1),
         cards: [],
         zone: {battlefield: [], graveyard: [], exile: [], library: [], hand: []},
         health: 20
@@ -73,6 +81,9 @@ export const useGameStore = defineStore('game', {
       this.$state.players = this.$state.players.map(p => 
         p.id === player.id ? player : p
       );
+    },
+    setUserInfo(userInfo: any) {
+      this.$state.userInfo = userInfo
     },
     setLastPlayerId(id: number) {
       this.$state.playerLastId = id;
