@@ -39,6 +39,7 @@
         z-index: 1;
         background: #ffffffff;
         color: #1a1a1a;
+        text-align: left;
         .modal-con {
             .modal-header {
                 box-shadow: 0px 7px 20px -6px #1a1a1a;

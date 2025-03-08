@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type { GameCard } from '~/types/Card'
 import type { Player } from '~/types/Player'
 import type { Zone } from '~/types/Zone'
+import { type LoginForm, type SignupForm } from '~/types/Forms';
 
 export const useGameStore = defineStore('game', {
   state: () => {
@@ -26,6 +27,19 @@ export const useGameStore = defineStore('game', {
     getLogs: (state) => state.logs,
   },
   actions: {
+    login(loginForm: LoginForm) {
+      console.log('form:',loginForm)
+    },
+    async signup(signupForm: SignupForm) {
+      console.log('form:',signupForm)
+      const { data, error } = await useFetch("http://localhost:8082/signup", {
+        method: "POST",
+        body: signupForm
+      });
+
+      if(data && data.success)
+        return data.message
+    },
     join() {
       const you = {
         id: 'player'+(this.playerLastId+1),

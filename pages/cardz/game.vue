@@ -121,7 +121,7 @@
 
             <template #footer>
                 <button 
-                    :class="['btn', 'bg-secondary']"
+                    :class="['btn', 'bg-primary', 'muted']"
                     @click="backToRoom">
                         Back
                 </button>
